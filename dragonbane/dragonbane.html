@@ -25,7 +25,7 @@
             color: var(--text-main);
             margin: 0;
             padding: 20px;
-            color-scheme: dark; /* Forces scrollbars, dropdowns, and checkboxes to dark mode */
+            color-scheme: dark; 
         }
 
         .container {
@@ -90,6 +90,18 @@
             color: var(--text-main);
         }
         .btn-secondary:hover { background-color: #555; }
+        
+        .btn-highlight {
+            background-color: var(--highlight);
+            color: #111;
+            width: 100%;
+            margin-bottom: 20px;
+            font-size: 1.1em;
+            padding: 15px;
+        }
+        .btn-highlight:hover {
+            background-color: #d4c8b8;
+        }
 
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
@@ -123,14 +135,14 @@
             border-radius: 3px;
             font-family: inherit;
             background-color: var(--input-bg);
-            color: #fff; /* Crisp white text inside inputs */
+            color: #fff; 
             box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
         select:focus, input:focus, textarea:focus {
             outline: none;
             border-color: var(--highlight);
             box-shadow: 0 0 5px rgba(184, 151, 74, 0.5);
-            background-color: #444; /* Slightly lighter on focus */
+            background-color: #444; 
         }
 
         .input-group { display: flex; gap: 10px; align-items: center; }
@@ -153,20 +165,45 @@
 
         #sheet-magic-section { background-color: #1f1a1a; border-color: var(--highlight); }
 
-        /* Print adjustments */
+        /* Highly Compact Print CSS */
         @media print {
-            body { background: white; color: black; color-scheme: light; }
-            .container { background: white; border: none; box-shadow: none; padding: 0; }
-            h1, h2, h3, label { color: black; }
-            .box { background: white; border: 1px solid #ccc; box-shadow: none; color: black; }
-            input, select, textarea { background: white; color: black; border: 1px solid #ccc; box-shadow: none; }
-            .skill-item { background: white; color: black; border: 1px solid #ccc; box-shadow: none; }
-            .skill-item label { color: black; }
-            .btn { display: none; }
-            .stat-box span { color: black; text-shadow: none; }
-            .info-box { background: #f9f9f9; color: black; }
-            th { background: #eee; color: black; }
-            table { background: white; }
+            @page { size: A4; margin: 8mm; }
+            body { 
+                background: white; color: black; color-scheme: light; 
+                padding: 0; margin: 0; font-size: 9pt; line-height: 1.2;
+            }
+            .container { 
+                background: white; border: none; box-shadow: none; 
+                padding: 0; margin: 0; max-width: 100%; 
+            }
+            h1 { display: none; } /* Hide the main title in print to save space */
+            h2, h3, h4 { color: black; margin: 2px 0; border-color: black; font-size: 11pt; }
+            .box { 
+                background: white; border: 1px solid #999; box-shadow: none; 
+                padding: 6px; margin-bottom: 6px; color: black; 
+            }
+            .grid-2 { gap: 6px; }
+            .grid-3 { gap: 6px; }
+            
+            textarea { 
+                background: transparent; color: black; border: none; box-shadow: none; 
+                resize: none; padding: 0; min-height: 40px; font-size: 9pt;
+            }
+            
+            .stat-box { padding: 4px; border-color: #999; }
+            .stat-box span { color: black; text-shadow: none; font-size: 1.5em; margin: 0; }
+            
+            .info-box { background: #f0f0f0; color: black; padding: 6px; border-color: #666; font-size: 8.5pt; margin-top: 4px; }
+            
+            th { background: #ddd; color: black; font-size: 8pt; padding: 3px; }
+            td { color: black; font-size: 8.5pt; padding: 3px; border-color: #aaa; }
+            table { margin-top: 4px; }
+
+            .condition-label { font-size: 7.5pt; color: black; }
+            
+            /* Hide UI elements */
+            .btn, #print-header { display: none !important; }
+            #sheet-magic-section { background-color: transparent; border-color: #999; }
         }
     </style>
 </head>
@@ -176,6 +213,8 @@
     <h1>Dragonbane Character Creator</h1>
     
     <div id="step1" class="step active">
+        <button class="btn btn-highlight" onclick="randomizeEverything()">🎲 Quick Roll: Randomize Entire Character</button>
+        
         <h2>Step 1: Basics</h2>
         <div class="grid-2">
             <div class="box">
@@ -330,7 +369,7 @@
             <div id="general-skills-container" class="skill-list"></div>
         </div>
 
-        <div id="magic-selection-container" class="box" style="display:none; border-color: var(--highlight); background-color: #1f1a1a;">
+        <div id="magic-selection-container" class="box" style="display:none; border-color: var(--highlight); background-color: #1a1515;">
             <h3 style="color: var(--highlight);">Magic Spells & Tricks (Grimoire)</h3>
             <p style="margin-top: 0; color: var(--text-muted);">As a Mage, choose exactly <strong style="color:var(--highlight);">3 Magic Tricks</strong> and <strong style="color:var(--highlight);">3 Rank 1 Spells</strong> from your school or General Magic.</p>
             <div class="grid-2">
@@ -350,7 +389,7 @@
     </div>
 
     <div id="step5" class="step">
-        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;">
+        <div id="print-header" style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 15px;">
             <h2 style="border: none; margin: 0; padding: 0;">Character Sheet</h2>
             <button class="btn btn-secondary" style="margin: 0;" onclick="window.print()">Print / Save PDF</button>
         </div>
@@ -369,20 +408,20 @@
             </div>
         </div>
 
-        <div class="box info-box" style="margin-top: 15px;">
+        <div class="box info-box" style="margin-top: 10px;">
             <strong>Kin Ability:</strong> <span id="sheet-kin-ability"></span>
-            <br><br>
+            <br>
             <strong>Heroic Ability:</strong> <span id="sheet-heroic-ability"></span>
         </div>
 
-        <div id="sheet-magic-section" class="box" style="display:none; margin-top: 15px;">
+        <div id="sheet-magic-section" class="box" style="display:none; margin-top: 10px;">
             <h3 style="color: var(--highlight); margin-top: 0;">Grimoire (Magic)</h3>
             <strong>School:</strong> <span id="sheet-magic-school"></span><br>
             <strong>Tricks:</strong> <span id="sheet-magic-tricks" style="color: var(--text-muted);"></span><br>
             <strong>Prepared Spells:</strong> <span id="sheet-magic-spells" style="color: var(--text-muted);"></span>
         </div>
 
-        <div class="grid-3" style="margin-top: 15px;">
+        <div class="grid-3" style="margin-top: 10px;">
             <div class="box stat-box">STR <span id="sheet-str"></span><label class="condition-label"><input type="checkbox"> Exhausted</label></div>
             <div class="box stat-box">CON <span id="sheet-con"></span><label class="condition-label"><input type="checkbox"> Sickly</label></div>
             <div class="box stat-box">AGL <span id="sheet-agl"></span><label class="condition-label"><input type="checkbox"> Dazed</label></div>
@@ -391,13 +430,13 @@
             <div class="box stat-box">CHA <span id="sheet-cha"></span><label class="condition-label"><input type="checkbox"> Disheartened</label></div>
         </div>
 
-        <div class="grid-3" style="margin-top: 15px;">
+        <div class="grid-3" style="margin-top: 10px;">
             <div class="box stat-box" style="font-size: 1em;">Hit Points (HP) <span id="sheet-hp"></span></div>
             <div class="box stat-box" style="font-size: 1em;">Willpower (WP) <span id="sheet-wp"></span></div>
             <div class="box stat-box" style="font-size: 1em;">Movement <span id="sheet-mov"></span></div>
         </div>
 
-        <div class="grid-2" style="margin-top: 15px;">
+        <div class="grid-2" style="margin-top: 10px;">
             <div class="box">
                 <h3 style="color: var(--text-main);">Combat Stats</h3>
                 <strong>Damage Bonus (STR):</strong> <span id="sheet-db-str" style="color:var(--highlight);"></span><br>
@@ -406,22 +445,22 @@
             </div>
             <div class="box">
                 <h3 style="color: var(--text-main);">Inventory & Equipment</h3>
-                <textarea id="sheet-equipment" rows="5" style="resize: vertical;"></textarea>
+                <textarea id="sheet-equipment" rows="4"></textarea>
             </div>
         </div>
 
         <div class="grid-2">
-            <div class="box" style="padding:0; border:none; background:transparent;">
+            <div class="box" style="padding:0; border:none; background:transparent; margin-bottom: 0;">
                 <h3 style="color: var(--text-main); margin-top:0;">Core Skills</h3>
                 <table id="skills-table"><tr><th>Skill</th><th>Attr</th><th>Chance</th></tr></table>
             </div>
-            <div class="box" style="padding:0; border:none; background:transparent;">
+            <div class="box" style="padding:0; border:none; background:transparent; margin-bottom: 0;">
                 <h3 style="color: var(--text-main); margin-top:0;">Weapon Skills</h3>
                 <table id="weapons-table"><tr><th>Skill</th><th>Attr</th><th>Chance</th></tr></table>
             </div>
         </div>
 
-        <button class="btn btn-secondary" style="margin-top: 30px; width:100%;" onclick="nextStep(4)">Back to Editor</button>
+        <button class="btn btn-secondary" style="margin-top: 20px; width:100%;" onclick="nextStep(4)">Back to Editor</button>
     </div>
 </div>
 
@@ -771,6 +810,55 @@
         const spellCbs = document.querySelectorAll('.magic-spell-check');
         const spellCount = document.querySelectorAll('.magic-spell-check:checked').length;
         spellCbs.forEach(cb => { if (!cb.checked) cb.disabled = (spellCount >= 3); });
+    }
+
+    function checkRandomCheckboxes(selector, limit) {
+        let cbs = Array.from(document.querySelectorAll(selector));
+        cbs.sort(() => 0.5 - Math.random());
+        cbs.forEach(cb => cb.checked = false);
+        for(let i=0; i<limit && i<cbs.length; i++) {
+            cbs[i].checked = true;
+        }
+    }
+
+    function randomizeEverything() {
+        // Step 1
+        rollKin();
+        randomizeSelectAndApply('kin-name-select', 'charName');
+        randomizeSelect('profession');
+        updateProfessionDetails();
+        randomizeSelectAndApply('prof-nickname-select', 'charNickname');
+        
+        if (document.getElementById('profession').value === "Mage") {
+            randomizeSelect('mage-school');
+            updateProfessionDetails();
+        }
+        randomizeSelect('age');
+
+        // Step 2
+        rollAllAttributes();
+
+        // Step 3
+        randomizeSelectAndApply('appearance-select', 'appearance');
+        randomizeSelectAndApply('weakness-select', 'weakness');
+        randomizeSelectAndApply('memento-select', 'memento');
+        randomizeSelect('equipment-select');
+
+        // Step 4
+        prepareSkillSelection();
+        checkRandomCheckboxes('.prof-skill-check', 6);
+        checkRandomCheckboxes('.gen-skill-check', maxAdditionalSkills);
+        
+        if (document.getElementById('profession').value === "Mage") {
+            checkRandomCheckboxes('.magic-trick-check', 3);
+            checkRandomCheckboxes('.magic-spell-check', 3);
+            enforceMagicLimits();
+        }
+        enforceSkillLimits();
+
+        // Build and show final sheet
+        buildSheet();
+        nextStep(5);
     }
 
     function buildSheet() {
