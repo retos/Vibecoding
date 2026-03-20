@@ -6,79 +6,168 @@
     <title>Dragonbane Character Creator</title>
     <style>
         :root {
-            --primary: #2c5e50;
-            --bg: #f4f1ea;
-            --box-bg: #e8e4d9;
-            --border: #1a3830;
-            --disabled: #bdc3c7;
-            --highlight: #d35400;
+            --primary: #8a1c1c; /* Deep Crimson */
+            --primary-hover: #5e1111;
+            --bg: #370404; /* Dark red background */
+            --container-bg: #101010; /* Dark grey sheet */
+            --box-bg: #2a2a2a; /* Slightly lighter inset boxes */
+            --border: #4a3c22; /* Dark bronze/brown */
+            --highlight: #b8974a; /* Antique gold */
+            --text-main: #d4c8b8; /* Parchment white */
+            --text-muted: #8b8378;
+            --input-bg: #3a3a3a; /* Lighter than box background */
+            --input-border: #5a5a5a; /* Slightly lighter border for inputs */
         }
+
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Georgia', serif;
             background-color: var(--bg);
-            color: #333;
+            color: var(--text-main);
             margin: 0;
             padding: 20px;
+            color-scheme: dark; /* Forces scrollbars, dropdowns, and checkboxes to dark mode */
         }
+
         .container {
             max-width: 900px;
             margin: 0 auto;
-            background: white;
-            padding: 20px;
-            border: 2px solid var(--primary);
-            border-radius: 8px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: var(--container-bg);
+            padding: 30px;
+            border: 2px solid var(--border);
+            border-radius: 4px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
         }
-        h1, h2, h3, h4 { color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
-        h4 { margin-top: 0; margin-bottom: 5px; font-size: 1em; }
-        .step { display: none; }
+
+        h1 {
+            color: var(--highlight);
+            text-transform: uppercase;
+            margin-bottom: 20px;
+            text-align: center;
+            font-size: 2.2em;
+            letter-spacing: 2px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+        }
+
+        h2, h3, h4 { 
+            color: var(--highlight); 
+            text-transform: uppercase; 
+            margin-bottom: 10px; 
+            letter-spacing: 1px;
+        }
+
+        h2 { font-size: 1.5em; border-bottom: 1px solid var(--border); padding-bottom: 5px; }
+        h4 { margin-top: 0; margin-bottom: 5px; font-size: 1em; color: var(--text-main); }
+        
+        .step { display: none; animation: fadeIn 0.4s ease-in; }
         .step.active { display: block; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
         .btn {
             background-color: var(--primary);
-            color: white;
-            border: none;
+            color: #fff;
+            border: 1px solid #000;
             padding: 10px 15px;
             cursor: pointer;
-            border-radius: 4px;
+            border-radius: 3px;
             font-weight: bold;
+            font-family: inherit;
             margin-top: 10px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.5);
+            transition: all 0.2s ease;
         }
-        .btn:hover { background-color: #1a3830; }
-        .btn-secondary { background-color: #7f8c8d; }
+        .btn:hover { 
+            background-color: var(--primary-hover); 
+            transform: translateY(-1px);
+        }
+        .btn-secondary { 
+            background-color: #444; 
+            border-color: #222;
+            color: var(--text-main);
+        }
+        .btn-secondary:hover { background-color: #555; }
+
         .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
         .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        
         .box {
             background-color: var(--box-bg);
             border: 1px solid var(--border);
             padding: 15px;
-            border-radius: 4px;
+            border-radius: 3px;
             margin-bottom: 15px;
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.3);
         }
+
         .info-box {
-            background-color: #fff;
+            background-color: #1f1f1f;
             border-left: 4px solid var(--highlight);
-            padding: 10px;
-            font-size: 0.9em;
+            padding: 12px;
+            font-size: 0.95em;
             margin-top: 10px;
+            color: #e0d8c0;
+            font-style: italic;
         }
-        label { display: block; font-weight: bold; margin-top: 10px; }
-        .dice-hint { font-weight: normal; font-size: 0.9em; color: #555; font-style: italic; }
+
+        label { display: block; font-weight: bold; margin-top: 10px; color: var(--highlight); }
+        .dice-hint { font-weight: normal; font-size: 0.85em; color: var(--text-muted); font-style: italic; }
+        
         select, input[type="text"], input[type="number"], textarea {
-            width: 100%; padding: 8px; margin-top: 5px;
-            box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;
+            width: 100%; padding: 10px; margin-top: 5px;
+            box-sizing: border-box; 
+            border: 1px solid var(--input-border); 
+            border-radius: 3px;
             font-family: inherit;
+            background-color: var(--input-bg);
+            color: #fff; /* Crisp white text inside inputs */
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
+        select:focus, input:focus, textarea:focus {
+            outline: none;
+            border-color: var(--highlight);
+            box-shadow: 0 0 5px rgba(184, 151, 74, 0.5);
+            background-color: #444; /* Slightly lighter on focus */
+        }
+
         .input-group { display: flex; gap: 10px; align-items: center; }
-        .stat-box { text-align: center; font-size: 1.2em; font-weight: bold; padding: 10px; }
-        .stat-box span { display: block; font-size: 2em; color: var(--primary); margin: 5px 0; }
-        .condition-label { font-size: 0.7em; font-weight: normal; display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 5px; cursor: pointer; }
-        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        th, td { border: 1px solid var(--border); padding: 5px; text-align: left; }
-        th { background-color: var(--primary); color: white; }
+        
+        .stat-box { text-align: center; font-size: 1.2em; font-weight: bold; padding: 10px; border-color: var(--primary); }
+        .stat-box span { display: block; font-size: 2.2em; color: var(--text-main); margin: 5px 0; font-family: 'Courier New', Courier, monospace; text-shadow: 1px 1px 2px #000; }
+        
+        .condition-label { font-size: 0.7em; font-weight: normal; display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 5px; cursor: pointer; color: var(--text-muted); }
+        
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; background-color: #1a1a1a; }
+        th, td { border: 1px solid var(--border); padding: 8px; text-align: left; }
+        th { background-color: var(--primary); color: white; text-transform: uppercase; font-size: 0.85em; letter-spacing: 1px; }
+        
         .skill-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .skill-item { background: #fff; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; }
-        .skill-item label { margin-top: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; }
-        .skill-item input[type="checkbox"]:disabled + span { color: #999; }
+        .skill-item { background: var(--input-bg); padding: 8px 10px; border: 1px solid var(--input-border); border-radius: 3px; transition: background 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
+        .skill-item:hover { background: #444; }
+        .skill-item label { margin-top: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; color: #fff; }
+        .skill-item input[type="checkbox"]:disabled + span { color: #888; text-decoration: line-through; }
+        .skill-item input[type="checkbox"]:checked + span { color: var(--highlight); font-weight: bold; }
+
+        #sheet-magic-section { background-color: #1f1a1a; border-color: var(--highlight); }
+
+        /* Print adjustments */
+        @media print {
+            body { background: white; color: black; color-scheme: light; }
+            .container { background: white; border: none; box-shadow: none; padding: 0; }
+            h1, h2, h3, label { color: black; }
+            .box { background: white; border: 1px solid #ccc; box-shadow: none; color: black; }
+            input, select, textarea { background: white; color: black; border: 1px solid #ccc; box-shadow: none; }
+            .skill-item { background: white; color: black; border: 1px solid #ccc; box-shadow: none; }
+            .skill-item label { color: black; }
+            .btn { display: none; }
+            .stat-box span { color: black; text-shadow: none; }
+            .info-box { background: #f9f9f9; color: black; }
+            th { background: #eee; color: black; }
+            table { background: white; }
+        }
     </style>
 </head>
 <body>
@@ -160,7 +249,7 @@
                 </select>
                 <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('age')">Roll</button>
             </div>
-            <p style="font-size: 0.9em; color: #555; margin-bottom: 0;"><em>Your age determines how many additional trained skills you get on top of the 6 core skills from your profession.</em></p>
+            <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 0;"><em>Your age determines how many additional trained skills you get on top of the 6 core skills from your profession.</em></p>
         </div>
 
         <button class="btn" onclick="nextStep(2)">Next Step: Attributes</button>
@@ -215,7 +304,7 @@
             </div>
             <div class="box">
                 <label>Starting Equipment & Weapons <span class="dice-hint">(Roll 1D6)</span></label>
-                <p style="font-size: 0.9em; margin-top: 0;">Select from your profession's starting kits. You can edit this manually on the final sheet.</p>
+                <p style="font-size: 0.9em; margin-top: 0; color: var(--text-muted);">Select from your profession's starting kits. You can edit this manually on the final sheet.</p>
                 <div class="input-group">
                     <select id="equipment-select"></select>
                     <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('equipment-select')">Roll</button>
@@ -230,20 +319,20 @@
         <h2>Step 4: Trained Skills & Spells</h2>
         
         <div class="box">
-            <h3>Profession Skills</h3>
-            <p style="margin-top: 0;">Choose exactly <strong style="color:var(--primary); font-size: 1.2em;">6</strong> from your Profession's allowed skills.</p>
+            <h3 style="color: var(--text-main);">Profession Skills</h3>
+            <p style="margin-top: 0;">Choose exactly <strong style="color:var(--highlight); font-size: 1.2em;">6</strong> from your Profession's allowed skills.</p>
             <div id="prof-skills-container" class="skill-list"></div>
         </div>
 
         <div class="box">
-            <h3>Additional Skills</h3>
-            <p style="margin-top: 0;">Based on your age (<strong id="display-age"></strong>), you may select <strong id="skills-allowed" style="color:var(--primary); font-size: 1.2em;"></strong> additional Trained Skills from the remaining list.</p>
+            <h3 style="color: var(--text-main);">Additional Skills</h3>
+            <p style="margin-top: 0;">Based on your age (<strong id="display-age" style="color:var(--text-main);"></strong>), you may select <strong id="skills-allowed" style="color:var(--highlight); font-size: 1.2em;"></strong> additional Trained Skills from the remaining list.</p>
             <div id="general-skills-container" class="skill-list"></div>
         </div>
 
-        <div id="magic-selection-container" class="box" style="display:none; border-color: var(--highlight);">
-            <h3>Magic Spells & Tricks (Grimoire)</h3>
-            <p style="margin-top: 0;">As a Mage, choose exactly <strong style="color:var(--highlight);">3 Magic Tricks</strong> and <strong style="color:var(--highlight);">3 Rank 1 Spells</strong> from your school or General Magic.</p>
+        <div id="magic-selection-container" class="box" style="display:none; border-color: var(--highlight); background-color: #1f1a1a;">
+            <h3 style="color: var(--highlight);">Magic Spells & Tricks (Grimoire)</h3>
+            <p style="margin-top: 0; color: var(--text-muted);">As a Mage, choose exactly <strong style="color:var(--highlight);">3 Magic Tricks</strong> and <strong style="color:var(--highlight);">3 Rank 1 Spells</strong> from your school or General Magic.</p>
             <div class="grid-2">
                 <div>
                     <h4>Magic Tricks</h4>
@@ -261,14 +350,14 @@
     </div>
 
     <div id="step5" class="step">
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <h2>Character Sheet</h2>
-            <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--border); padding-bottom: 10px; margin-bottom: 20px;">
+            <h2 style="border: none; margin: 0; padding: 0;">Character Sheet</h2>
+            <button class="btn btn-secondary" style="margin: 0;" onclick="window.print()">Print / Save PDF</button>
         </div>
         
         <div class="box grid-2">
             <div>
-                <strong>Name:</strong> <span id="sheet-name"></span><br>
+                <strong>Name:</strong> <span id="sheet-name" style="color:var(--highlight);"></span><br>
                 <strong>Kin:</strong> <span id="sheet-kin"></span><br>
                 <strong>Profession:</strong> <span id="sheet-profession"></span><br>
                 <strong>Age:</strong> <span id="sheet-age"></span>
@@ -286,11 +375,11 @@
             <strong>Heroic Ability:</strong> <span id="sheet-heroic-ability"></span>
         </div>
 
-        <div id="sheet-magic-section" class="box" style="display:none; margin-top: 15px; border-color: var(--highlight); background-color: #fcf3cf;">
-            <h3 style="color: var(--highlight);">Grimoire (Magic)</h3>
+        <div id="sheet-magic-section" class="box" style="display:none; margin-top: 15px;">
+            <h3 style="color: var(--highlight); margin-top: 0;">Grimoire (Magic)</h3>
             <strong>School:</strong> <span id="sheet-magic-school"></span><br>
-            <strong>Tricks:</strong> <span id="sheet-magic-tricks"></span><br>
-            <strong>Prepared Spells:</strong> <span id="sheet-magic-spells"></span>
+            <strong>Tricks:</strong> <span id="sheet-magic-tricks" style="color: var(--text-muted);"></span><br>
+            <strong>Prepared Spells:</strong> <span id="sheet-magic-spells" style="color: var(--text-muted);"></span>
         </div>
 
         <div class="grid-3" style="margin-top: 15px;">
@@ -310,29 +399,29 @@
 
         <div class="grid-2" style="margin-top: 15px;">
             <div class="box">
-                <h3>Combat Stats</h3>
-                <strong>Damage Bonus (STR):</strong> <span id="sheet-db-str"></span><br>
-                <strong>Damage Bonus (AGL):</strong> <span id="sheet-db-agl"></span><br>
+                <h3 style="color: var(--text-main);">Combat Stats</h3>
+                <strong>Damage Bonus (STR):</strong> <span id="sheet-db-str" style="color:var(--highlight);"></span><br>
+                <strong>Damage Bonus (AGL):</strong> <span id="sheet-db-agl" style="color:var(--highlight);"></span><br>
                 <strong>Encumbrance Limit:</strong> <span id="sheet-enc"></span> items
             </div>
             <div class="box">
-                <h3>Inventory & Equipment</h3>
+                <h3 style="color: var(--text-main);">Inventory & Equipment</h3>
                 <textarea id="sheet-equipment" rows="5" style="resize: vertical;"></textarea>
             </div>
         </div>
 
         <div class="grid-2">
-            <div class="box">
-                <h3>Core Skills</h3>
+            <div class="box" style="padding:0; border:none; background:transparent;">
+                <h3 style="color: var(--text-main); margin-top:0;">Core Skills</h3>
                 <table id="skills-table"><tr><th>Skill</th><th>Attr</th><th>Chance</th></tr></table>
             </div>
-            <div class="box">
-                <h3>Weapon Skills</h3>
+            <div class="box" style="padding:0; border:none; background:transparent;">
+                <h3 style="color: var(--text-main); margin-top:0;">Weapon Skills</h3>
                 <table id="weapons-table"><tr><th>Skill</th><th>Attr</th><th>Chance</th></tr></table>
             </div>
         </div>
 
-        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="nextStep(4)">Back to Editor</button>
+        <button class="btn btn-secondary" style="margin-top: 30px; width:100%;" onclick="nextStep(4)">Back to Editor</button>
     </div>
 </div>
 
@@ -473,7 +562,6 @@
         updateKinDetails();
         updateProfessionDetails();
 
-        // Populate D20 Background lists
         const appSelect = document.getElementById('appearance-select');
         appearancesList.forEach((item, index) => appSelect.add(new Option(`${index+1}. ${item}`, item)));
         
@@ -530,7 +618,6 @@
 
         let displaySkills = data.skills;
         
-        // Handle Mage School specifics
         if(prof === "Mage") {
             document.getElementById('mage-school-group').style.display = 'block';
             const school = document.getElementById('mage-school').value;
@@ -541,8 +628,8 @@
 
         document.getElementById('prof-details').innerHTML = 
             `<strong>Key Attribute:</strong> ${data.attr} <br>
-             <strong>Skills:</strong> ${displaySkills} <br>
-             <strong>Heroic Ability:</strong> ${data.heroic}`;
+             <strong style="color:var(--highlight);">Skills:</strong> ${displaySkills} <br>
+             <strong style="color:var(--highlight);">Heroic Ability:</strong> ${data.heroic}`;
         
         let nickSelect = document.getElementById('prof-nickname-select');
         nickSelect.innerHTML = "";
@@ -598,7 +685,6 @@
         if(!document.getElementById('memento').value) document.getElementById('memento').value = document.getElementById('memento-select').value;
     }
 
-    // --- Trained Skills Segregation ---
     function prepareSkillSelection() {
         const age = document.getElementById('age').value;
         document.getElementById('display-age').innerText = age;
@@ -611,17 +697,14 @@
         
         const allSkills = [...coreSkills, ...weaponSkills];
 
-        // Mage specific preparations
         if (prof === "Mage") {
             const school = document.getElementById('mage-school').value;
             profSkillsStr = magicData[school].skills;
             
-            // Add the Magic School to the list of available skills to choose from
             if(!allSkills.find(s => s.name === school)) {
                 allSkills.push({name: school, attr: "int"});
             }
 
-            // Show and populate Magic Spells & Tricks
             document.getElementById('magic-selection-container').style.display = 'block';
             
             const tricksContainer = document.getElementById('magic-tricks-list');
@@ -711,7 +794,6 @@
         document.getElementById('sheet-kin-ability').innerHTML = kinData[kin].ability;
         document.getElementById('sheet-heroic-ability').innerText = profData[prof].heroic;
 
-        // Mage Grimoire Output
         if (prof === "Mage") {
             document.getElementById('sheet-magic-section').style.display = 'block';
             document.getElementById('sheet-magic-school').innerText = document.getElementById('mage-school').value;
@@ -770,9 +852,9 @@
             let isTrained = trainedNames.includes(skill.name);
             
             let finalChance = isTrained ? base * 2 : base;
-            if (isMagicSchool && !isTrained) finalChance = 0; // Untrained magic has 0 base chance [cite: 1726]
+            if (isMagicSchool && !isTrained) finalChance = 0; 
 
-            let displayStyle = isTrained ? "font-weight:bold; color:var(--primary);" : "";
+            let displayStyle = isTrained ? "font-weight:bold; color:var(--highlight);" : "";
             skillsHtml += `<tr style="${displayStyle}"><td>${isTrained ? '★ ' : ''}${skill.name}</td><td>${skill.attr.toUpperCase()}</td><td>${finalChance}</td></tr>`;
         });
         document.getElementById('skills-table').innerHTML = skillsHtml;
@@ -781,7 +863,7 @@
         weaponSkills.forEach(skill => {
             let base = getBaseChance(attrMap[skill.attr]);
             let finalChance = trainedNames.includes(skill.name) ? base * 2 : base;
-            let displayStyle = trainedNames.includes(skill.name) ? "font-weight:bold; color:var(--primary);" : "";
+            let displayStyle = trainedNames.includes(skill.name) ? "font-weight:bold; color:var(--highlight);" : "";
             weaponsHtml += `<tr style="${displayStyle}"><td>${trainedNames.includes(skill.name) ? '★ ' : ''}${skill.name}</td><td>${skill.attr.toUpperCase()}</td><td>${finalChance}</td></tr>`;
         });
         document.getElementById('weapons-table').innerHTML = weaponsHtml;
