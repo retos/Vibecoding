@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dragonbane Character Creator</title>
+    <style>
+        :root {
+            --primary: #2c5e50;
+            --bg: #f4f1ea;
+            --box-bg: #e8e4d9;
+            --border: #1a3830;
+            --disabled: #bdc3c7;
+            --highlight: #d35400;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: #333;
+            margin: 0;
+            padding: 20px;
+        }
+        .container {
+            max-width: 900px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border: 2px solid var(--primary);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        h1, h2, h3, h4 { color: var(--primary); text-transform: uppercase; margin-bottom: 10px; }
+        h4 { margin-top: 0; margin-bottom: 5px; font-size: 1em; }
+        .step { display: none; }
+        .step.active { display: block; }
+        .btn {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        .btn:hover { background-color: #1a3830; }
+        .btn-secondary { background-color: #7f8c8d; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; }
+        .box {
+            background-color: var(--box-bg);
+            border: 1px solid var(--border);
+            padding: 15px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .info-box {
+            background-color: #fff;
+            border-left: 4px solid var(--highlight);
+            padding: 10px;
+            font-size: 0.9em;
+            margin-top: 10px;
+        }
+        label { display: block; font-weight: bold; margin-top: 10px; }
+        .dice-hint { font-weight: normal; font-size: 0.9em; color: #555; font-style: italic; }
+        select, input[type="text"], input[type="number"], textarea {
+            width: 100%; padding: 8px; margin-top: 5px;
+            box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px;
+            font-family: inherit;
+        }
+        .input-group { display: flex; gap: 10px; align-items: center; }
+        .stat-box { text-align: center; font-size: 1.2em; font-weight: bold; padding: 10px; }
+        .stat-box span { display: block; font-size: 2em; color: var(--primary); margin: 5px 0; }
+        .condition-label { font-size: 0.7em; font-weight: normal; display: flex; justify-content: center; align-items: center; gap: 5px; margin-top: 5px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid var(--border); padding: 5px; text-align: left; }
+        th { background-color: var(--primary); color: white; }
+        .skill-list { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .skill-item { background: #fff; padding: 5px 10px; border: 1px solid #ccc; border-radius: 4px; }
+        .skill-item label { margin-top: 0; font-weight: normal; cursor: pointer; display: flex; align-items: center; gap: 8px; }
+        .skill-item input[type="checkbox"]:disabled + span { color: #999; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Dragonbane Character Creator</h1>
+    
+    <div id="step1" class="step active">
+        <h2>Step 1: Basics</h2>
+        <div class="grid-2">
+            <div class="box">
+                <label>Kin <span class="dice-hint">(Roll 1D12)</span></label>
+                <div class="input-group">
+                    <select id="kin" onchange="updateKinDetails()">
+                        <option value="Human">1-4. Human</option>
+                        <option value="Halfling">5-7. Halfling</option>
+                        <option value="Dwarf">8-9. Dwarf</option>
+                        <option value="Elf">10. Elf</option>
+                        <option value="Mallard">11. Mallard</option>
+                        <option value="Wolfkin">12. Wolfkin</option>
+                    </select>
+                    <button class="btn btn-secondary" style="margin-top:0;" onclick="rollKin()">Roll</button>
+                </div>
+                <div id="kin-ability" class="info-box"></div>
+                
+                <label>First Name <span class="dice-hint">(Roll 1D6 or Type)</span></label>
+                <div class="input-group">
+                    <select id="kin-name-select" onchange="document.getElementById('charName').value = this.value"></select>
+                    <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelectAndApply('kin-name-select', 'charName')">Roll</button>
+                </div>
+                <input type="text" id="charName" placeholder="Custom name...">
+            </div>
+
+            <div class="box">
+                <label>Profession <span class="dice-hint">(Roll 1D10)</span></label>
+                <div class="input-group">
+                    <select id="profession" onchange="updateProfessionDetails()">
+                        <option value="Artisan">1. Artisan</option>
+                        <option value="Bard">2. Bard</option>
+                        <option value="Fighter">3. Fighter</option>
+                        <option value="Hunter">4. Hunter</option>
+                        <option value="Knight">5. Knight</option>
+                        <option value="Mage">6. Mage</option>
+                        <option value="Mariner">7. Mariner</option>
+                        <option value="Merchant">8. Merchant</option>
+                        <option value="Scholar">9. Scholar</option>
+                        <option value="Thief">10. Thief</option>
+                    </select>
+                    <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('profession'); updateProfessionDetails();">Roll</button>
+                </div>
+
+                <div id="mage-school-group" style="display:none; margin-top: 10px;">
+                    <label>School of Magic</label>
+                    <select id="mage-school" onchange="updateProfessionDetails()">
+                        <option value="Animism">Animism</option>
+                        <option value="Elementalism">Elementalism</option>
+                        <option value="Mentalism">Mentalism</option>
+                    </select>
+                </div>
+
+                <div id="prof-details" class="info-box"></div>
+
+                <label>Nickname <span class="dice-hint">(Roll 1D6 or Type)</span></label>
+                <div class="input-group">
+                    <select id="prof-nickname-select" onchange="document.getElementById('charNickname').value = this.value"></select>
+                    <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelectAndApply('prof-nickname-select', 'charNickname')">Roll</button>
+                </div>
+                <input type="text" id="charNickname" placeholder="Custom nickname...">
+            </div>
+        </div>
+
+        <div class="box">
+            <label>Age <span class="dice-hint">(Roll 1D6: 1-2 Young, 3-4 Adult, 5-6 Old)</span></label>
+            <div class="input-group">
+                <select id="age">
+                    <option value="Young">Young (6+2 Trained Skills)</option>
+                    <option value="Adult" selected>Adult (6+4 Trained Skills)</option>
+                    <option value="Old">Old (6+6 Trained Skills)</option>
+                </select>
+                <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('age')">Roll</button>
+            </div>
+            <p style="font-size: 0.9em; color: #555; margin-bottom: 0;"><em>Your age determines how many additional trained skills you get on top of the 6 core skills from your profession.</em></p>
+        </div>
+
+        <button class="btn" onclick="nextStep(2)">Next Step: Attributes</button>
+    </div>
+
+    <div id="step2" class="step">
+        <h2>Step 2: Attributes</h2>
+        <p>Roll <strong>4D6</strong> and drop the lowest for each attribute. Age modifiers will be applied automatically.</p>
+        <button class="btn btn-secondary" style="margin-bottom: 15px;" onclick="rollAllAttributes()">Roll All Attributes Automatically</button>
+        
+        <div class="grid-3">
+            <div class="box"><label>Strength (STR)</label><input type="number" id="attr-str" min="3" max="18" value="10"></div>
+            <div class="box"><label>Constitution (CON)</label><input type="number" id="attr-con" min="3" max="18" value="10"></div>
+            <div class="box"><label>Agility (AGL)</label><input type="number" id="attr-agl" min="3" max="18" value="10"></div>
+            <div class="box"><label>Intelligence (INT)</label><input type="number" id="attr-int" min="3" max="18" value="10"></div>
+            <div class="box"><label>Willpower (WIL)</label><input type="number" id="attr-wil" min="3" max="18" value="10"></div>
+            <div class="box"><label>Charisma (CHA)</label><input type="number" id="attr-cha" min="3" max="18" value="10"></div>
+        </div>
+        
+        <button class="btn btn-secondary" onclick="nextStep(1)">Back</button>
+        <button class="btn" onclick="generateDetailsIfEmpty(); nextStep(3)">Next Step: Background & Gear</button>
+    </div>
+
+    <div id="step3" class="step">
+        <h2>Step 3: Background & Equipment</h2>
+        <div class="grid-2">
+            <div>
+                <div class="box">
+                    <label>Appearance <span class="dice-hint">(Roll 1D20)</span></label>
+                    <div class="input-group">
+                        <select id="appearance-select" onchange="document.getElementById('appearance').value = this.value"></select>
+                        <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelectAndApply('appearance-select', 'appearance')">Roll</button>
+                    </div>
+                    <input type="text" id="appearance" placeholder="Custom appearance...">
+                </div>
+                <div class="box">
+                    <label>Weakness <span class="dice-hint">(Roll 1D20)</span></label>
+                    <div class="input-group">
+                        <select id="weakness-select" onchange="document.getElementById('weakness').value = this.value"></select>
+                        <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelectAndApply('weakness-select', 'weakness')">Roll</button>
+                    </div>
+                    <input type="text" id="weakness" placeholder="Custom weakness...">
+                </div>
+                <div class="box">
+                    <label>Memento <span class="dice-hint">(Roll 1D20)</span></label>
+                    <div class="input-group">
+                        <select id="memento-select" onchange="document.getElementById('memento').value = this.value"></select>
+                        <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelectAndApply('memento-select', 'memento')">Roll</button>
+                    </div>
+                    <input type="text" id="memento" placeholder="Custom memento...">
+                </div>
+            </div>
+            <div class="box">
+                <label>Starting Equipment & Weapons <span class="dice-hint">(Roll 1D6)</span></label>
+                <p style="font-size: 0.9em; margin-top: 0;">Select from your profession's starting kits. You can edit this manually on the final sheet.</p>
+                <div class="input-group">
+                    <select id="equipment-select"></select>
+                    <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('equipment-select')">Roll</button>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-secondary" onclick="nextStep(2)">Back</button>
+        <button class="btn" onclick="prepareSkillSelection(); nextStep(4)">Next Step: Trained Skills</button>
+    </div>
+
+    <div id="step4" class="step">
+        <h2>Step 4: Trained Skills & Spells</h2>
+        
+        <div class="box">
+            <h3>Profession Skills</h3>
+            <p style="margin-top: 0;">Choose exactly <strong style="color:var(--primary); font-size: 1.2em;">6</strong> from your Profession's allowed skills.</p>
+            <div id="prof-skills-container" class="skill-list"></div>
+        </div>
+
+        <div class="box">
+            <h3>Additional Skills</h3>
+            <p style="margin-top: 0;">Based on your age (<strong id="display-age"></strong>), you may select <strong id="skills-allowed" style="color:var(--primary); font-size: 1.2em;"></strong> additional Trained Skills from the remaining list.</p>
+            <div id="general-skills-container" class="skill-list"></div>
+        </div>
+
+        <div id="magic-selection-container" class="box" style="display:none; border-color: var(--highlight);">
+            <h3>Magic Spells & Tricks (Grimoire)</h3>
+            <p style="margin-top: 0;">As a Mage, choose exactly <strong style="color:var(--highlight);">3 Magic Tricks</strong> and <strong style="color:var(--highlight);">3 Rank 1 Spells</strong> from your school or General Magic.</p>
+            <div class="grid-2">
+                <div>
+                    <h4>Magic Tricks</h4>
+                    <div id="magic-tricks-list" class="skill-list" style="grid-template-columns: 1fr;"></div>
+                </div>
+                <div>
+                    <h4>Rank 1 Spells</h4>
+                    <div id="magic-spells-list" class="skill-list" style="grid-template-columns: 1fr;"></div>
+                </div>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" onclick="nextStep(3)">Back</button>
+        <button class="btn" onclick="buildSheet(); nextStep(5)">Finish & View Sheet</button>
+    </div>
+
+    <div id="step5" class="step">
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <h2>Character Sheet</h2>
+            <button class="btn btn-secondary" onclick="window.print()">Print / Save PDF</button>
+        </div>
+        
+        <div class="box grid-2">
+            <div>
+                <strong>Name:</strong> <span id="sheet-name"></span><br>
+                <strong>Kin:</strong> <span id="sheet-kin"></span><br>
+                <strong>Profession:</strong> <span id="sheet-profession"></span><br>
+                <strong>Age:</strong> <span id="sheet-age"></span>
+            </div>
+            <div>
+                <strong>Appearance:</strong> <span id="sheet-appearance"></span><br>
+                <strong>Weakness:</strong> <span id="sheet-weakness"></span><br>
+                <strong>Memento:</strong> <span id="sheet-memento"></span>
+            </div>
+        </div>
+
+        <div class="box info-box" style="margin-top: 15px;">
+            <strong>Kin Ability:</strong> <span id="sheet-kin-ability"></span>
+            <br><br>
+            <strong>Heroic Ability:</strong> <span id="sheet-heroic-ability"></span>
+        </div>
+
+        <div id="sheet-magic-section" class="box" style="display:none; margin-top: 15px; border-color: var(--highlight); background-color: #fcf3cf;">
+            <h3 style="color: var(--highlight);">Grimoire (Magic)</h3>
+            <strong>School:</strong> <span id="sheet-magic-school"></span><br>
+            <strong>Tricks:</strong> <span id="sheet-magic-tricks"></span><br>
+            <strong>Prepared Spells:</strong> <span id="sheet-magic-spells"></span>
+        </div>
+
+        <div class="grid-3" style="margin-top: 15px;">
+            <div class="box stat-box">STR <span id="sheet-str"></span><label class="condition-label"><input type="checkbox"> Exhausted</label></div>
+            <div class="box stat-box">CON <span id="sheet-con"></span><label class="condition-label"><input type="checkbox"> Sickly</label></div>
+            <div class="box stat-box">AGL <span id="sheet-agl"></span><label class="condition-label"><input type="checkbox"> Dazed</label></div>
+            <div class="box stat-box">INT <span id="sheet-int"></span><label class="condition-label"><input type="checkbox"> Angry</label></div>
+            <div class="box stat-box">WIL <span id="sheet-wil"></span><label class="condition-label"><input type="checkbox"> Scared</label></div>
+            <div class="box stat-box">CHA <span id="sheet-cha"></span><label class="condition-label"><input type="checkbox"> Disheartened</label></div>
+        </div>
+
+        <div class="grid-3" style="margin-top: 15px;">
+            <div class="box stat-box" style="font-size: 1em;">Hit Points (HP) <span id="sheet-hp"></span></div>
+            <div class="box stat-box" style="font-size: 1em;">Willpower (WP) <span id="sheet-wp"></span></div>
+            <div class="box stat-box" style="font-size: 1em;">Movement <span id="sheet-mov"></span></div>
+        </div>
+
+        <div class="grid-2" style="margin-top: 15px;">
+            <div class="box">
+                <h3>Combat Stats</h3>
+                <strong>Damage Bonus (STR):</strong> <span id="sheet-db-str"></span><br>
+                <strong>Damage Bonus (AGL):</strong> <span id="sheet-db-agl"></span><br>
+                <strong>Encumbrance Limit:</strong> <span id="sheet-enc"></span> items
+            </div>
+            <div class="box">
+                <h3>Inventory & Equipment</h3>
+                <textarea id="sheet-equipment" rows="5" style="resize: vertical;"></textarea>
+            </div>
+        </div>
+
+        <div class="grid-2">
+            <div class="box">
+                <h3>Core Skills</h3>
+                <table id="skills-table"><tr><th>Skill</th><th>Attr</th><th>Chance</th></tr></table>
+            </div>
+            <div class="box">
+                <h3>Weapon Skills</h3>
+                <table id="weapons-table"><tr><th>Skill</th><th>Attr</th><th>Chance</th></tr></table>
+            </div>
+        </div>
+
+        <button class="btn btn-secondary" style="margin-top: 20px;" onclick="nextStep(4)">Back to Editor</button>
+    </div>
+</div>
+
+<script>
+    // --- Data Dictionaries ---
+    const kinData = {
+        "Human": {
+            names: ["Joruna", "Tym", "Halvelda", "Garmander", "Verolun", "Lothar"],
+            ability: "<strong>Adaptive (WP 3):</strong> When rolling for a skill, you can choose to make the roll using another skill of your choice. You must be able to justify how you use the selected skill instead of the normal one. The GM has the final word, but should be lenient."
+        },
+        "Halfling": {
+            names: ["Snappy", "Brine", "Cottar", "Bumble", "Perrywick", "Theoline"],
+            ability: "<strong>Hard to Catch (WP 3):</strong> You can activate this ability when dodging an attack, getting a boon to the EVADE roll."
+        },
+        "Dwarf": {
+            names: ["Tinderrock", "Halwyld", "Tymolana", "Traut", "Urd", "Fermer"],
+            ability: "<strong>Unforgiving (WP 3):</strong> You can activate this ability when attacking someone who harmed you in the past (at least 1 point of damage) and get a boon to the roll."
+        },
+        "Elf": {
+            names: ["Arasin", "Illyriana", "Galvander", "Tyrindelia", "Erwilnor", "Andremone"],
+            ability: "<strong>Inner Peace (WP -):</strong> Meditate deeply during a stretch rest. You heal an additional D6 HP and a D6 extra WP, and can recover from an additional condition. You cannot be awakened."
+        },
+        "Mallard": {
+            names: ["Qwucksum", "Splats", "Moggee", "Groddy", "Blisandina", "Hackleswell"],
+            ability: "<strong>Ill-Tempered (WP 3):</strong> Activate when making a skill roll to get a boon, you become Angry. Cannot be used for INT rolls.<br><strong>Webbed Feet (WP -):</strong> Boon to SWIMMING rolls. Full speed in water."
+        },
+        "Wolfkin": {
+            names: ["Wyld", "Wolfshadow", "Lunariem", "Obdurian", "Frostbite", "Wuldenhall"],
+            ability: "<strong>Hunting Instincts (WP 3):</strong> Designate a creature in sight or scent as prey. Follow scent for a day, spend 1 extra WP for a boon on an attack."
+        }
+    };
+
+    const profData = {
+        "Artisan": {
+            attr: "STR", skills: "Axes, Brawling, Crafting, Hammers, Knives, Sleight of Hand, Spot Hidden, Swords", heroic: "Master Blacksmith, Master Carpenter or Master Tanner",
+            nicknames: ["Stonehammer", "Woodcleaver", "Strongfist", "Barrelmaker", "Bridgebuilder", "Ironmaster"],
+            gear: ["1-2: Warhammer (small), leather armor, blacksmith's tools, torch, flint & tinder, D8 food rations, D8 silver", "3-4: Handaxe, leather armor, carpentry tools, torch, rope (hemp), flint & tinder, D8 food rations, D8 silver", "5-6: Knife, leather armor, tanner's tools, lantern, lamp oil, flint & tinder, D8 food rations, D8 silver"]
+        },
+        "Bard": {
+            attr: "CHA", skills: "Acrobatics, Bluffing, Evade, Knives, Languages, Myths & Legends, Performance, Persuasion", heroic: "Musician",
+            nicknames: ["Odemaker", "Talespinner", "Silvervoice", "Gildenclef", "Honeytongue", "Rhymesmith"],
+            gear: ["1-2: Lyre, knife, oil lamp, lamp oil, flint & tinder, D6 food rations, D8 silver", "3-4: Flute, dagger, rope (hemp), torch, flint & tinder, D6 food rations, D8 silver", "5-6: Horn, knife, torch, flint & tinder, D6 food rations, D8 silver"]
+        },
+        "Fighter": {
+            attr: "STR", skills: "Axes, Bows, Brawling, Crossbows, Evade, Hammers, Spears, Swords", heroic: "Veteran",
+            nicknames: ["Gravemaker", "Grimjaw", "Windthaw", "Coldsteel", "The Fearless", "The Butcher"],
+            gear: ["1-2: Broadsword/battle axe/morning star, small shield, chainmail, torch, flint & tinder, D6 food, D6 silver", "3-4: Short sword/handaxe/short spear, light crossbow, quiver, leather armor, torch, flint & tinder, D6 food, D6 silver", "5-6: Long spear, studded leather armor, open helmet, torch, flint & tinder, D6 food, D6 silver"]
+        },
+        "Hunter": {
+            attr: "AGL", skills: "Acrobatics, Awareness, Bows, Bushcraft, Hunting & Fishing, Knives, Slings, Sneaking", heroic: "Companion",
+            nicknames: ["Forest Fox", "Wolfbane", "Pathfinder", "The Weathered", "Bloodhunger", "Shadowbolt"],
+            gear: ["1-2: Dagger, short bow, quiver, leather armor, sleeping pelt, torch, flint/tinder, rope, snare, D8 food, D6 silver", "3-4: Knife, longbow, quiver, leather armor, sleeping pelt, torch, flint/tinder, rope, fishing rod, D8 food, D6 silver", "5-6: Dagger, sling, leather armor, sleeping pelt, torch, flint/tinder, rope, snare, D8 food, D6 silver"]
+        },
+        "Knight": {
+            attr: "STR", skills: "Beast Lore, Hammers, Myths & Legends, Performance, Persuasion, Riding, Spears, Swords", heroic: "Guardian",
+            nicknames: ["Dragonheart", "Goldlance", "Griffinclaw", "The Noble", "Gleamhelm", "Mourningcloak"],
+            gear: ["1-2: Broadsword/morning star, shield (small), plate armor, great helm, torch, flint & tinder, D6 food, D12 silver", "3-4: Flail/warhammer (small), shield (small), chainmail, open helmet, torch, flint & tinder, D6 food, D12 silver", "5-6: Short sword, lance, shield (small), chainmail, open helmet, combat trained horse, D6 food, D12 silver"]
+        },
+        "Mage": {
+            attr: "WIL", skills: "Dependent on Magic School", heroic: "Magic (Spells & Grimoire)",
+            nicknames: ["Rootheart", "Crookback", "Graycape", "Stormhand", "Stafflimper", "Shadowbringer"],
+            gear: ["1-2: Staff, orbuculum, grimoire, torch, flint & tinder, D6 food, D8 silver", "3-4: Knife, wand, grimoire, torch, flint & tinder, D6 food, D8 silver", "5-6: Amulet, grimoire, sleeping pelt, torch, flint & tinder, D6 food, D8 silver"]
+        },
+        "Mariner": {
+            attr: "AGL", skills: "Acrobatics, Awareness, Hunting & Fishing, Knives, Languages, Seamanship, Swimming, Swords", heroic: "Sea Legs",
+            nicknames: ["Whitewater", "Waverider", "Foamborn", "Saltsplash", "Seadog", "Stormfarer"],
+            gear: ["1-2: Dagger, short bow, quiver, rope, grappling hook, sleeping pelt, torch, flint/tinder, D8 food, D10 silver", "3-4: Scimitar, leather armor, rope, grappling hook, torch, flint/tinder, D8 food, D10 silver", "5-6: Trident, spyglass, rope, grappling hook, torch, flint/tinder, D8 food, D10 silver"]
+        },
+        "Merchant": {
+            attr: "CHA", skills: "Awareness, Bartering, Bluffing, Evade, Knives, Persuasion, Sleight of Hand, Spot Hidden", heroic: "Treasure Hunter",
+            nicknames: ["Silvergrin", "Goldtooth", "Silktongue", "The Lisping and Truthful", "Lardbelly", "Skinflint"],
+            gear: ["1-2: Dagger, sleeping pelt, torch, flint & tinder, rope, donkey, D6 food, D12 silver", "3-4: Knife, sleeping pelt, lantern, lamp oil, flint & tinder, field kitchen, donkey, cart, D6 food, D12 silver", "5-6: Dagger, sleeping pelt, large tent, oil lamp, lamp oil, flint & tinder, backpack, D6 food, D12 silver"]
+        },
+        "Scholar": {
+            attr: "INT", skills: "Awareness, Beast Lore, Bushcraft, Evade, Healing, Languages, Myths & Legends, Spot Hidden", heroic: "Intuition",
+            nicknames: ["Clearmind", "Dustlung", "Farsight", "The Lettered", "The All-Knowing", "The Plump and Learned"],
+            gear: ["1-2: Staff, notebook, quill, sleeping pelt, torch, flint & tinder, D6 food, D10 silver", "3-4: Knife, book (any subject), sleeping pelt, oil lamp, lamp oil, flint & tinder, D6 food, D10 silver", "5-6: Short sword, bandages, sleeping poison (one dose), sleeping pelt, lantern, lamp oil, flint & tinder, D6 food, D10 silver"]
+        },
+        "Thief": {
+            attr: "AGL", skills: "Acrobatics, Awareness, Bluffing, Evade, Knives, Sleight of Hand, Sneaking, Spot Hidden", heroic: "Backstabbing",
+            nicknames: ["Halffinger", "Blackrat", "Redeye", "Quickfoot", "Doubletongue", "Nightstabber"],
+            gear: ["1-2: Dagger, sling, rope (hemp), grappling hook, torch, flint & tinder, D6 food, D10 silver", "3-4: Knife, lockpicks (simple), torch, flint & tinder, D6 food, D10 silver", "5-6: Two daggers, marbles, rope (hemp), torch, flint & tinder, D6 food, D10 silver"]
+        }
+    };
+
+    const magicData = {
+        "General": {
+            tricks: ["Fetch", "Flick", "Light", "Open/Close", "Repair Clothes", "Sense Magic"],
+            spells: ["Dispel (Rank 1)", "Protector (Rank 1)"]
+        },
+        "Animism": {
+            skills: "Animism, Beast Lore, Bushcraft, Evade, Healing, Hunting & Fishing, Sneaking, Staves",
+            tricks: ["Birdsong", "Clean", "Cook Food", "Floral Trail", "Hairstyle"],
+            spells: ["Animal Whisperer (Rank 1)", "Banish (Rank 1)", "Ensnaring Roots (Rank 1)", "Lightning Flash (Rank 1)", "Treat Wound (Rank 1)"]
+        },
+        "Elementalism": {
+            skills: "Elementalism, Awareness, Evade, Healing, Languages, Myths & Legends, Spot Hidden, Staves",
+            tricks: ["Heat/Chill", "Ignite", "Puff of Smoke"],
+            spells: ["Fireball (Rank 1)", "Frost (Rank 1)", "Gust of Wind (Rank 1)", "Pillar (Rank 1)", "Shatter (Rank 1)"]
+        },
+        "Mentalism": {
+            skills: "Mentalism, Acrobatics, Awareness, Brawling, Evade, Healing, Languages, Myths & Legends",
+            tricks: ["Lock/Unlock", "Magic Stool", "Slow Fall"],
+            spells: ["Farsight (Rank 1)", "Levitate (Rank 1)", "Longstrider (Rank 1)", "Power Fist (Rank 1)", "Stone Skin (Rank 1)"]
+        }
+    };
+
+    const coreSkills = [
+        {name: "Acrobatics", attr: "agl"}, {name: "Awareness", attr: "int"},
+        {name: "Bartering", attr: "cha"}, {name: "Beast Lore", attr: "int"},
+        {name: "Bluffing", attr: "cha"}, {name: "Bushcraft", attr: "int"},
+        {name: "Crafting", attr: "str"}, {name: "Evade", attr: "agl"},
+        {name: "Healing", attr: "int"}, {name: "Hunting & Fishing", attr: "agl"},
+        {name: "Languages", attr: "int"}, {name: "Myths & Legends", attr: "int"},
+        {name: "Performance", attr: "cha"}, {name: "Persuasion", attr: "cha"},
+        {name: "Riding", attr: "agl"}, {name: "Seamanship", attr: "int"},
+        {name: "Sleight of Hand", attr: "agl"}, {name: "Sneaking", attr: "agl"},
+        {name: "Spot Hidden", attr: "int"}, {name: "Swimming", attr: "agl"}
+    ];
+
+    const weaponSkills = [
+        {name: "Axes", attr: "str"}, {name: "Bows", attr: "agl"},
+        {name: "Brawling", attr: "str"}, {name: "Crossbows", attr: "agl"},
+        {name: "Hammers", attr: "str"}, {name: "Knives", attr: "agl"},
+        {name: "Slings", attr: "agl"}, {name: "Spears", attr: "str"},
+        {name: "Staves", attr: "agl"}, {name: "Swords", attr: "str"}
+    ];
+
+    const appearancesList = ["Ugly scar across your cheek", "Strange headgear", "Abnormally pale", "Constant smile", "Icy, penetrating gaze", "A bit of extra weight", "Thin and wiry", "Abnormal amounts of body hair", "Balding", "Prominent tattoo", "Foul body odor", "Glorious hairstyle", "Limp", "Filthy", "Honest blue eyes", "Silver tooth", "Heavily perfumed", "Different-colored eyes", "Hissing voice", "Weathered face"];
+    const weaknessesList = ["Gullible. I believe everything.", "Greedy. I want a bigger share.", "Thin-skinned. I never tolerate a provocation.", "Foolhardy. I always go first.", "Fainthearted. I stay at the back.", "Monster Slayer. All monsters must be slain.", "Intolerant. Nightkin are evil.", "Slothful. I take every chance to rest.", "Gluttonous. I eat everything tasty.", "Kleptomaniac. I steal valuables.", "Vain. I help anyone who praises me.", "Reckless. I take big risks.", "Fearful of Magic. Mages cannot be trusted.", "Craving Knowledge. Knowledge over friends.", "Child of the Wild. I never sleep indoors.", "Boastful. I exaggerate achievements.", "Violent. Violence is the answer.", "Overbearing. I tell others what to do.", "Pessimist. Things turn out for the worst.", "Haughty. I look down on everyone."];
+    const mementosList = ["Your trusty old shoes", "A simple silver medallion", "A letter from an old friend", "A ragged old journal", "A family bracelet", "A wooden figurine", "A strangely shaped stone", "A copper coin from a lost treasure", "An old pewter tankard", "A horn taken as a trophy", "A fang taken as a trophy", "Bone dice", "A locket containing hair", "An ornate key", "A hand-drawn map", "A ring with an inscription", "A bone whistle", "Ragged old hat", "A griffin feather", "A beautifully carved pipe"];
+
+    let maxAdditionalSkills = 0;
+
+    // --- Core Logic ---
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updateKinDetails();
+        updateProfessionDetails();
+
+        // Populate D20 Background lists
+        const appSelect = document.getElementById('appearance-select');
+        appearancesList.forEach((item, index) => appSelect.add(new Option(`${index+1}. ${item}`, item)));
+        
+        const weakSelect = document.getElementById('weakness-select');
+        weaknessesList.forEach((item, index) => weakSelect.add(new Option(`${index+1}. ${item}`, item)));
+        
+        const memSelect = document.getElementById('memento-select');
+        mementosList.forEach((item, index) => memSelect.add(new Option(`${index+1}. ${item}`, item)));
+    });
+
+    function nextStep(step) {
+        document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
+        document.getElementById('step' + step).classList.add('active');
+    }
+
+    function randomizeSelect(id) {
+        const select = document.getElementById(id);
+        const randomIndex = Math.floor(Math.random() * select.options.length);
+        select.selectedIndex = randomIndex;
+    }
+
+    function randomizeSelectAndApply(selectId, inputId) {
+        randomizeSelect(selectId);
+        document.getElementById(inputId).value = document.getElementById(selectId).value;
+    }
+
+    function rollKin() {
+        let roll = Math.floor(Math.random() * 12) + 1;
+        let select = document.getElementById('kin');
+        if(roll <= 4) select.value = "Human";
+        else if(roll <= 7) select.value = "Halfling";
+        else if(roll <= 9) select.value = "Dwarf";
+        else if(roll === 10) select.value = "Elf";
+        else if(roll === 11) select.value = "Mallard";
+        else select.value = "Wolfkin";
+        updateKinDetails();
+    }
+
+    function updateKinDetails() {
+        const kin = document.getElementById('kin').value;
+        const data = kinData[kin];
+        
+        document.getElementById('kin-ability').innerHTML = data.ability;
+        
+        let nameSelect = document.getElementById('kin-name-select');
+        nameSelect.innerHTML = "";
+        data.names.forEach((n, idx) => nameSelect.add(new Option(`${idx+1}. ${n}`, n)));
+        document.getElementById('charName').value = data.names[0];
+    }
+
+    function updateProfessionDetails() {
+        const prof = document.getElementById('profession').value;
+        const data = profData[prof];
+
+        let displaySkills = data.skills;
+        
+        // Handle Mage School specifics
+        if(prof === "Mage") {
+            document.getElementById('mage-school-group').style.display = 'block';
+            const school = document.getElementById('mage-school').value;
+            displaySkills = magicData[school].skills;
+        } else {
+            document.getElementById('mage-school-group').style.display = 'none';
+        }
+
+        document.getElementById('prof-details').innerHTML = 
+            `<strong>Key Attribute:</strong> ${data.attr} <br>
+             <strong>Skills:</strong> ${displaySkills} <br>
+             <strong>Heroic Ability:</strong> ${data.heroic}`;
+        
+        let nickSelect = document.getElementById('prof-nickname-select');
+        nickSelect.innerHTML = "";
+        data.nicknames.forEach((n, idx) => nickSelect.add(new Option(`${idx+1}. ${n}`, n)));
+        document.getElementById('charNickname').value = data.nicknames[0];
+
+        let gearSelect = document.getElementById('equipment-select');
+        gearSelect.innerHTML = "";
+        data.gear.forEach(g => gearSelect.add(new Option(g, g.substring(5))));
+    }
+
+    function roll4d6DropLowest() {
+        let rolls = [];
+        for(let i=0; i<4; i++) rolls.push(Math.floor(Math.random() * 6) + 1);
+        rolls.sort((a,b) => a-b);
+        return rolls[1] + rolls[2] + rolls[3];
+    }
+
+    function rollAllAttributes() {
+        const attrs = ['str', 'con', 'agl', 'int', 'wil', 'cha'];
+        const age = document.getElementById('age').value;
+        
+        attrs.forEach(attr => {
+            let score = roll4d6DropLowest();
+            if (age === "Young" && (attr === 'agl' || attr === 'con')) score += 1;
+            if (age === "Old") {
+                if (attr === 'str' || attr === 'agl' || attr === 'con') score -= 2;
+                if (attr === 'int' || attr === 'wil') score += 1;
+            }
+            if (score > 18) score = 18;
+            if (score < 3) score = 3;
+            document.getElementById('attr-' + attr).value = score;
+        });
+    }
+
+    function getBaseChance(score) {
+        if (score <= 5) return 3;
+        if (score <= 8) return 4;
+        if (score <= 12) return 5;
+        if (score <= 15) return 6;
+        return 7;
+    }
+
+    function getDamageBonus(score) {
+        if (score <= 12) return "-";
+        if (score <= 16) return "+D4";
+        return "+D6";
+    }
+
+    function generateDetailsIfEmpty() {
+        if(!document.getElementById('appearance').value) document.getElementById('appearance').value = document.getElementById('appearance-select').value;
+        if(!document.getElementById('weakness').value) document.getElementById('weakness').value = document.getElementById('weakness-select').value;
+        if(!document.getElementById('memento').value) document.getElementById('memento').value = document.getElementById('memento-select').value;
+    }
+
+    // --- Trained Skills Segregation ---
+    function prepareSkillSelection() {
+        const age = document.getElementById('age').value;
+        document.getElementById('display-age').innerText = age;
+        
+        maxAdditionalSkills = (age === "Young") ? 2 : (age === "Adult") ? 4 : 6;
+        document.getElementById('skills-allowed').innerText = maxAdditionalSkills;
+
+        const prof = document.getElementById('profession').value;
+        let profSkillsStr = profData[prof].skills;
+        
+        const allSkills = [...coreSkills, ...weaponSkills];
+
+        // Mage specific preparations
+        if (prof === "Mage") {
+            const school = document.getElementById('mage-school').value;
+            profSkillsStr = magicData[school].skills;
+            
+            // Add the Magic School to the list of available skills to choose from
+            if(!allSkills.find(s => s.name === school)) {
+                allSkills.push({name: school, attr: "int"});
+            }
+
+            // Show and populate Magic Spells & Tricks
+            document.getElementById('magic-selection-container').style.display = 'block';
+            
+            const tricksContainer = document.getElementById('magic-tricks-list');
+            tricksContainer.innerHTML = "";
+            const allTricks = [...magicData["General"].tricks, ...magicData[school].tricks];
+            allTricks.forEach(t => {
+                tricksContainer.innerHTML += `<label><input type="checkbox" class="magic-trick-check" value="${t}" onchange="enforceMagicLimits()"> <span>${t}</span></label>`;
+            });
+
+            const spellsContainer = document.getElementById('magic-spells-list');
+            spellsContainer.innerHTML = "";
+            const allSpells = [...magicData["General"].spells, ...magicData[school].spells];
+            allSpells.forEach(s => {
+                spellsContainer.innerHTML += `<label><input type="checkbox" class="magic-spell-check" value="${s}" onchange="enforceMagicLimits()"> <span>${s}</span></label>`;
+            });
+
+        } else {
+            document.getElementById('magic-selection-container').style.display = 'none';
+        }
+
+        const profSkillsArr = profSkillsStr.split(',').map(s => s.trim().toLowerCase());
+
+        const profContainer = document.getElementById('prof-skills-container');
+        const genContainer = document.getElementById('general-skills-container');
+        
+        profContainer.innerHTML = ""; 
+        genContainer.innerHTML = ""; 
+        
+        allSkills.sort((a,b) => a.name.localeCompare(b.name)).forEach(skill => {
+            const div = document.createElement('div');
+            div.className = "skill-item";
+            
+            const isProfSkill = profSkillsArr.includes(skill.name.toLowerCase());
+
+            if (isProfSkill) {
+                div.innerHTML = `<label><input type="checkbox" class="prof-skill-check" value="${skill.name}" onchange="enforceSkillLimits()"> <span>${skill.name} (${skill.attr.toUpperCase()})</span></label>`;
+                profContainer.appendChild(div);
+            } else {
+                div.innerHTML = `<label><input type="checkbox" class="gen-skill-check" value="${skill.name}" onchange="enforceSkillLimits()"> <span>${skill.name} (${skill.attr.toUpperCase()})</span></label>`;
+                genContainer.appendChild(div);
+            }
+        });
+    }
+
+    function enforceSkillLimits() {
+        const profCheckboxes = document.querySelectorAll('.prof-skill-check');
+        const profCheckedCount = document.querySelectorAll('.prof-skill-check:checked').length;
+        profCheckboxes.forEach(cb => {
+            if (!cb.checked) cb.disabled = (profCheckedCount >= 6);
+        });
+
+        const genCheckboxes = document.querySelectorAll('.gen-skill-check');
+        const genCheckedCount = document.querySelectorAll('.gen-skill-check:checked').length;
+        genCheckboxes.forEach(cb => {
+            if (!cb.checked) cb.disabled = (genCheckedCount >= maxAdditionalSkills);
+        });
+    }
+
+    function enforceMagicLimits() {
+        const trickCbs = document.querySelectorAll('.magic-trick-check');
+        const trickCount = document.querySelectorAll('.magic-trick-check:checked').length;
+        trickCbs.forEach(cb => { if (!cb.checked) cb.disabled = (trickCount >= 3); });
+
+        const spellCbs = document.querySelectorAll('.magic-spell-check');
+        const spellCount = document.querySelectorAll('.magic-spell-check:checked').length;
+        spellCbs.forEach(cb => { if (!cb.checked) cb.disabled = (spellCount >= 3); });
+    }
+
+    function buildSheet() {
+        let name = document.getElementById('charName').value || "Unnamed Hero";
+        let nick = document.getElementById('charNickname').value;
+        document.getElementById('sheet-name').innerText = nick ? `${name} "${nick}"` : name;
+        
+        const kin = document.getElementById('kin').value;
+        const prof = document.getElementById('profession').value;
+        
+        document.getElementById('sheet-kin').innerText = kin;
+        document.getElementById('sheet-profession').innerText = prof;
+        document.getElementById('sheet-age').innerText = document.getElementById('age').value;
+        
+        document.getElementById('sheet-appearance').innerText = document.getElementById('appearance').value;
+        document.getElementById('sheet-weakness').innerText = document.getElementById('weakness').value;
+        document.getElementById('sheet-memento').innerText = document.getElementById('memento').value;
+        
+        document.getElementById('sheet-equipment').value = document.getElementById('equipment-select').value;
+        
+        document.getElementById('sheet-kin-ability').innerHTML = kinData[kin].ability;
+        document.getElementById('sheet-heroic-ability').innerText = profData[prof].heroic;
+
+        // Mage Grimoire Output
+        if (prof === "Mage") {
+            document.getElementById('sheet-magic-section').style.display = 'block';
+            document.getElementById('sheet-magic-school').innerText = document.getElementById('mage-school').value;
+            
+            const selectedTricks = Array.from(document.querySelectorAll('.magic-trick-check:checked')).map(cb => cb.value).join(', ');
+            const selectedSpells = Array.from(document.querySelectorAll('.magic-spell-check:checked')).map(cb => cb.value).join(', ');
+            
+            document.getElementById('sheet-magic-tricks').innerText = selectedTricks || "None Selected";
+            document.getElementById('sheet-magic-spells').innerText = selectedSpells || "None Selected";
+        } else {
+            document.getElementById('sheet-magic-section').style.display = 'none';
+        }
+
+        const str = parseInt(document.getElementById('attr-str').value);
+        const con = parseInt(document.getElementById('attr-con').value);
+        const agl = parseInt(document.getElementById('attr-agl').value);
+        const int = parseInt(document.getElementById('attr-int').value);
+        const wil = parseInt(document.getElementById('attr-wil').value);
+        const cha = parseInt(document.getElementById('attr-cha').value);
+
+        document.getElementById('sheet-str').innerText = str;
+        document.getElementById('sheet-con').innerText = con;
+        document.getElementById('sheet-agl').innerText = agl;
+        document.getElementById('sheet-int').innerText = int;
+        document.getElementById('sheet-wil').innerText = wil;
+        document.getElementById('sheet-cha').innerText = cha;
+
+        document.getElementById('sheet-hp').innerText = con;
+        document.getElementById('sheet-wp').innerText = wil;
+        document.getElementById('sheet-enc').innerText = Math.ceil(str / 2);
+        document.getElementById('sheet-db-str').innerText = getDamageBonus(str);
+        document.getElementById('sheet-db-agl').innerText = getDamageBonus(agl);
+
+        let baseMov = 10;
+        if (kin === "Halfling" || kin === "Dwarf" || kin === "Mallard") baseMov = 8;
+        if (kin === "Wolfkin") baseMov = 12;
+        if (agl <= 6) baseMov -= 4;
+        else if (agl <= 9) baseMov -= 2;
+        else if (agl >= 16) baseMov += 4;
+        else if (agl >= 13) baseMov += 2;
+        document.getElementById('sheet-mov').innerText = baseMov;
+
+        const trainedNames = Array.from(document.querySelectorAll('.prof-skill-check:checked, .gen-skill-check:checked')).map(cb => cb.value);
+        const attrMap = { str, con, agl, int, wil, cha };
+        
+        let currentCore = [...coreSkills];
+        if (prof === "Mage") {
+            currentCore.push({name: document.getElementById('mage-school').value, attr: "int"});
+            currentCore.sort((a,b) => a.name.localeCompare(b.name));
+        }
+
+        let skillsHtml = "<tr><th>Skill</th><th>Attr</th><th>Chance</th></tr>";
+        currentCore.forEach(skill => {
+            let base = getBaseChance(attrMap[skill.attr]);
+            let isMagicSchool = ["Animism", "Elementalism", "Mentalism"].includes(skill.name);
+            let isTrained = trainedNames.includes(skill.name);
+            
+            let finalChance = isTrained ? base * 2 : base;
+            if (isMagicSchool && !isTrained) finalChance = 0; // Untrained magic has 0 base chance [cite: 1726]
+
+            let displayStyle = isTrained ? "font-weight:bold; color:var(--primary);" : "";
+            skillsHtml += `<tr style="${displayStyle}"><td>${isTrained ? '★ ' : ''}${skill.name}</td><td>${skill.attr.toUpperCase()}</td><td>${finalChance}</td></tr>`;
+        });
+        document.getElementById('skills-table').innerHTML = skillsHtml;
+
+        let weaponsHtml = "<tr><th>Skill</th><th>Attr</th><th>Chance</th></tr>";
+        weaponSkills.forEach(skill => {
+            let base = getBaseChance(attrMap[skill.attr]);
+            let finalChance = trainedNames.includes(skill.name) ? base * 2 : base;
+            let displayStyle = trainedNames.includes(skill.name) ? "font-weight:bold; color:var(--primary);" : "";
+            weaponsHtml += `<tr style="${displayStyle}"><td>${trainedNames.includes(skill.name) ? '★ ' : ''}${skill.name}</td><td>${skill.attr.toUpperCase()}</td><td>${finalChance}</td></tr>`;
+        });
+        document.getElementById('weapons-table').innerHTML = weaponsHtml;
+    }
+</script>
+</body>
+</html>

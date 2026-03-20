@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <title>Neon, Zauberer & Fluss - 10-Finger-System</title>
+    <script src="levels.js"></script>
+    <style>
+        body { margin: 0; overflow: hidden; background-color: #111; color: white; font-family: 'Consolas', 'Courier New', 'Roboto Mono', monospace; }
+        
+        #start-screen { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; background-color: #111; z-index: 1000; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center; }
+        #start-screen h1 { font-size: 4rem; color: #0ff; text-shadow: 0 0 20px #0ff; margin-bottom: 5px; text-transform: uppercase; }
+        #start-screen h2 { font-size: 2rem; color: #a87ffb; text-shadow: 0 0 15px #a87ffb; margin-top: 0; }
+        .high-score-box { font-size: 1.5rem; color: #ff0; margin-bottom: 20px; }
+        
+        .settings-container { background-color: #222; padding: 15px 30px; border-radius: 10px; border: 2px solid #444; display: flex; gap: 30px; margin-bottom: 20px; align-items: center; justify-content: center; flex-wrap: wrap; box-shadow: 0 0 15px rgba(0,0,0,0.5); }
+        .setting-label { font-size: 1.2rem; cursor: pointer; display: flex; align-items: center; gap: 10px; color: #ccc;}
+        .setting-select { font-size: 1.1rem; padding: 5px 10px; background: #111; color: white; border: 1px solid #a87ffb; border-radius: 5px; cursor: pointer; font-family: inherit;}
+        
+        .mode-container { display: flex; gap: 30px; margin-top: 10px; flex-wrap: wrap; justify-content: center; max-width: 1100px; }
+        .mode-card { background-color: #222; padding: 20px; border-radius: 15px; border: 2px solid #444; width: 300px; display: flex; flex-direction: column; justify-content: space-between;}
+        .mode-card h3 { font-size: 1.8rem; margin-top: 0; margin-bottom: 10px; }
+        
+        button { background-color: #f0f; color: white; border: none; padding: 12px 25px; font-size: 1.2rem; cursor: pointer; border-radius: 8px; text-shadow: 0 0 5px white; box-shadow: 0 0 15px #f0f; font-family: inherit; transition: transform 0.1s; margin: 5px; }
+        button:hover { transform: scale(1.05); } button:active { transform: scale(0.95); }
+        .btn-wizard { background-color: #a87ffb; box-shadow: 0 0 15px #a87ffb; }
+        .btn-flow { background-color: #00ffcc; box-shadow: 0 0 15px #00ffcc; color: #111; text-shadow: none; font-weight: bold; }
+        .btn-resume { background-color: #0ff; box-shadow: 0 0 15px #0ff; color: #111; text-shadow: none; font-weight: bold; }
+
+        #ui { position: absolute; top: 20px; left: 20px; right: 20px; display: flex; justify-content: space-between; align-items: flex-start; z-index: 10; transition: color 0.5s; }
+        .stats-box { font-size: 1.5rem; display: flex; flex-direction: column; gap: 8px; }
+        .level-title { font-size: 2rem; text-transform: uppercase; text-align: center; flex-grow: 1; transition: color 0.5s, text-shadow 0.5s; }
+        #progress-container { width: 100%; max-width: 400px; height: 20px; background-color: #333; border-radius: 10px; overflow: hidden; margin-top: 10px; }
+        #progress-bar { width: 0%; height: 100%; transition: width 0.3s ease-out; }
+        #apm-container { font-size: 1.8rem; font-weight: bold; margin-top: 10px; display: none; }
+
+        #game-container-neon { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; }
+        .target-neon { position: absolute; font-size: 3.5rem; font-weight: bold; color: #0ff; text-shadow: 0 0 15px #0ff, 0 0 30px #0ff; white-space: nowrap; transition: color 0.5s, text-shadow 0.5s; }
+        .explosion { position: absolute; font-size: 3.5rem; color: #f0f; text-shadow: 0 0 20px #f0f; animation: pop 0.4s ease-out forwards; }
+
+        #game-container-wizard { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #wizard { font-size: 8rem; margin-bottom: 20px; transition: transform 0.1s; }
+        #target-display-wizard { font-size: 6rem; font-weight: bold; color: #0ff; text-shadow: 0 0 20px #0ff; background-color: rgba(0, 0, 0, 0.5); padding: 20px 40px; border-radius: 20px; border: 2px solid rgba(0, 255, 255, 0.3); min-height: 90px; transition: all 0.5s; }
+        .ghost-letter { position: absolute; font-size: 6rem; font-weight: bold; color: #a87ffb; text-shadow: 0 0 20px #a87ffb; pointer-events: none; animation: flyAway 0.5s ease-out forwards; transition: color 0.5s, text-shadow 0.5s; }
+        
+        #game-container-flow { position: absolute; top: 0; left: 0; width: 100vw; height: 100vh; display: flex; flex-direction: column; justify-content: center; overflow: hidden; }
+        #flow-text-wrapper { position: absolute; font-size: 6rem; font-weight: bold; white-space: nowrap; left: 50vw; transition: transform 0.15s cubic-bezier(0.2, 0.8, 0.2, 1); }
+        
+        /* TEXT FLUSS BASICS */
+        .flow-char { display: inline-block; width: 1ch; text-align: center; transition: color 0.1s, text-shadow 0.1s; }
+        .flow-char.upcoming { color: #888; }
+        .flow-char.current { color: #00ffcc; text-shadow: 0 0 20px #00ffcc; border-bottom: 8px solid #00ffcc; }
+        .flow-char.typed { color: #333; }
+        
+        /* GROSSBUCHSTABEN (NEON & ZAUBERER - statisch) */
+        .upper-neon { color: #f0f !important; text-shadow: 0 0 15px #f0f, 0 0 30px #f0f !important; }
+        .upper-neon-endless { color: #ff0 !important; text-shadow: 0 0 15px #ff0, 0 0 30px #ff0 !important; }
+        .upper-wizard { color: #ffeb3b !important; text-shadow: 0 0 15px #ffeb3b, 0 0 30px #ffeb3b !important; }
+        .upper-wizard-endless { color: #ff0055 !important; text-shadow: 0 0 15px #ff0055, 0 0 30px #ff0055 !important; }
+
+        /* GROSSBUCHSTABEN (FLUSS MODUS - Dynamische Farbwechsel!) */
+        .flow-char.upcoming.upper-flow { color: #f0f; text-shadow: 0 0 15px #f0f; }
+        .flow-char.current.upper-flow { color: #f0f; text-shadow: 0 0 20px #f0f; border-bottom: 8px solid #00ffcc; }
+        .flow-char.typed.upper-flow { color: #525; text-shadow: none; } /* Dunkles Lila wenn getippt */
+
+        .flow-char.upcoming.endless-flow-upper { color: #ffeb3b; text-shadow: 0 0 15px #ffeb3b; }
+        .flow-char.current.endless-flow-upper { color: #ffeb3b; text-shadow: 0 0 20px #ffeb3b; border-bottom: 8px solid #00bfff; }
+        .flow-char.typed.endless-flow-upper { color: #550; text-shadow: none; }
+
+        /* ENDLOS-MODUS FARBEN */
+        .endless-neon-text { color: #0f0 !important; text-shadow: 0 0 15px #0f0, 0 0 30px #0f0 !important; }
+        .endless-wizard-text { color: #ffaa00 !important; text-shadow: 0 0 20px #ffaa00 !important; }
+        .endless-wizard-box { border-color: rgba(255, 170, 0, 0.5) !important; }
+        .endless-flow-text { color: #00bfff !important; text-shadow: 0 0 20px #00bfff !important; }
+        .flow-char.current.endless-flow-current { color: #00bfff; border-bottom-color: #00bfff; text-shadow: 0 0 20px #00bfff; }
+
+        @keyframes flyAway { 0% { transform: translateY(0) scale(1); opacity: 1; } 100% { transform: translateY(-150px) scale(1.5) rotate(15deg); opacity: 0; } }
+        .shake { animation: shake 0.3s cubic-bezier(.36,.07,.19,.97) both; }
+        @keyframes shake { 10%, 90% { transform: translate3d(-5px, 0, 0); } 20%, 80% { transform: translate3d(5px, 0, 0); } 30%, 50%, 70% { transform: translate3d(-10px, 0, 0); } 40%, 60% { transform: translate3d(10px, 0, 0); } }
+        @keyframes pop { 0% { transform: scale(1); opacity: 1; } 100% { transform: scale(2.5); opacity: 0; } }
+        .confetti { position: absolute; width: 12px; height: 12px; z-index: 2000; pointer-events: none; animation: confettiBurst 1.5s ease-out forwards; }
+        @keyframes confettiBurst { 0% { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 1; } 80% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) rotate(var(--rot)) scale(0.5); opacity: 0; } }
+    </style>
+</head>
+<body>
+
+    <div id="start-screen">
+        <h1>Tasten-Helden</h1>
+        <h2>Wähle dein Abenteuer</h2>
+        <div class="high-score-box">🏆 Highscore: <span id="highscore-display">0</span></div>
+        
+        <div class="settings-container">
+            <label class="setting-label">
+                <input type="checkbox" id="hide-acc-cb" style="transform: scale(1.5);">
+                Genauigkeit verbergen (Stressfrei)
+            </label>
+            <label class="setting-label">
+                Geschwindigkeit: 
+                <select id="speed-select" class="setting-select">
+                    <option value="0.6">1 - Sehr langsam 🐢</option>
+                    <option value="0.8">2 - Langsam 🚶</option>
+                    <option value="1.0" selected>3 - Normal 🏃</option>
+                    <option value="1.2">4 - Schnell 🚲</option>
+                    <option value="1.5">5 - Sehr schnell 🚀</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="mode-container">
+            <div class="mode-card">
+                <h3 style="color: #0ff; text-shadow: 0 0 10px #0ff;">Neon Action</h3>
+                <p>Buchstaben fallen herab! Tippe schnell, bevor sie den Boden berühren.</p>
+                <div>
+                    <button onclick="startGame('neon', false)">Neu</button>
+                    <button id="resume-neon" class="btn-resume" style="display:none;" onclick="startGame('neon', true)">Weiter</button>
+                </div>
+            </div>
+            <div class="mode-card">
+                <h3 style="color: #a87ffb; text-shadow: 0 0 10px #a87ffb;">Zauberer Zen</h3>
+                <p>Kein Zeitdruck. Magischer Fokus auf einzelne Wörter.</p>
+                <div>
+                    <button class="btn-wizard" onclick="startGame('wizard', false)">Neu</button>
+                    <button id="resume-wizard" class="btn-resume" style="display:none;" onclick="startGame('wizard', true)">Weiter</button>
+                </div>
+            </div>
+            <div class="mode-card">
+                <h3 style="color: #00ffcc; text-shadow: 0 0 10px #00ffcc;">Fliesstext Fluss</h3>
+                <p>Kontinuierliches Band von rechts. Tippe Abstände mit! Kein Zeitdruck.</p>
+                <div>
+                    <button class="btn-flow" onclick="startGame('flow', false)">Neu</button>
+                    <button id="resume-flow" class="btn-resume" style="display:none;" onclick="startGame('flow', true)">Weiter</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ui" style="display: none;">
+        <div class="stats-box" id="stats-box">
+            <div>Punkte: <span id="score">0</span></div>
+            <div id="accuracy-box">Genauigkeit: <span id="accuracy">100</span>%</div>
+            <div id="progress-container"><div id="progress-bar"></div></div>
+            <div id="apm-container">⚡ APM: <span id="apm-value">0</span></div>
+            <button id="skip-btn" style="margin-top: 10px; font-size: 1rem; padding: 5px 10px;" onclick="skipLevel()">⏭️ Level überspringen</button>
+            <button style="margin-top: 5px; font-size: 1rem; padding: 5px 10px; background-color: #555; box-shadow: none;" onclick="location.reload()">🏠 Menü</button>
+        </div>
+        <div class="level-title" id="level-title-display">
+            Level <span id="level-display">1</span>: <span id="level-name">Titel</span>
+        </div>
+    </div>
+
+    <div id="game-container-neon" style="display: none;"></div>
+    <div id="game-container-wizard" style="display: none;">
+        <div id="wizard">🧙‍♂️</div>
+        <div id="target-display-wizard">Warte...</div>
+    </div>
+    <div id="game-container-flow" style="display: none;">
+        <div id="flow-text-wrapper"></div>
+    </div>
+
+    <script>
+        // --- LEVEL PREPROCESSING ---
+        GAME_LEVELS.forEach(level => {
+            if (level.type === "story") {
+                let splitItems = [];
+                level.items.forEach(textBlock => {
+                    splitItems.push(...textBlock.split(' ').filter(w => w.length > 0));
+                });
+                level.items = splitItems;
+            }
+        });
+
+        let activeMode = null; let isPlaying = false; let score = 0; let totalKeypresses = 0; let correctKeypresses = 0;
+        let currentLevelIndex = 0; let currentConfig = GAME_LEVELS[0];
+        
+        let orderedSpawnIndex = 0; 
+        let flowText = ""; let flowIndex = 0; 
+        let endlessStartTime = 0; let endlessKeystrokes = 0; let apmInterval = null;
+        let speedMultiplier = 1.0; 
+        
+        let highScore = parseInt(localStorage.getItem('typingGame_highScore')) || 0;
+        let savedLevel = parseInt(localStorage.getItem('typingGame_savedLevel')) || 0;
+        
+        let savedSpeed = localStorage.getItem('typingGame_speed');
+        if (savedSpeed) document.getElementById('speed-select').value = savedSpeed;
+        if (localStorage.getItem('typingGame_hideAcc') === 'true') document.getElementById('hide-acc-cb').checked = true;
+
+        document.getElementById('highscore-display').innerText = highScore;
+        if (savedLevel > 0) {
+            document.getElementById('resume-neon').style.display = 'inline-block';
+            document.getElementById('resume-wizard').style.display = 'inline-block';
+            document.getElementById('resume-flow').style.display = 'inline-block';
+        }
+
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        function playSound(type) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            const osc = audioCtx.createOscillator(); const gain = audioCtx.createGain(); osc.connect(gain); gain.connect(audioCtx.destination); const now = audioCtx.currentTime;
+            if (type === 'hit-neon') { osc.type = 'square'; osc.frequency.setValueAtTime(800, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.1); osc.start(now); osc.stop(now + 0.1); }
+            else if (type === 'hit-wizard') { osc.type = 'sine'; osc.frequency.setValueAtTime(1200, now); osc.frequency.exponentialRampToValueAtTime(300, now + 0.3); gain.gain.setValueAtTime(0.05, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.3); osc.start(now); osc.stop(now + 0.3); }
+            else if (type === 'hit-flow') { osc.type = 'sine'; osc.frequency.setValueAtTime(900, now); osc.frequency.exponentialRampToValueAtTime(700, now + 0.05); gain.gain.setValueAtTime(0.03, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.05); osc.start(now); osc.stop(now + 0.05); }
+            else if (type === 'error') { osc.type = 'triangle'; osc.frequency.setValueAtTime(150, now); osc.frequency.exponentialRampToValueAtTime(100, now + 0.1); gain.gain.setValueAtTime(0.1, now); gain.gain.exponentialRampToValueAtTime(0.01, now + 0.2); osc.start(now); osc.stop(now + 0.2); }
+            else if (type === 'levelup') { osc.type = 'sine'; osc.frequency.setValueAtTime(400, now); osc.frequency.setValueAtTime(600, now + 0.1); osc.frequency.setValueAtTime(800, now + 0.2); gain.gain.setValueAtTime(0.1, now); gain.gain.linearRampToValueAtTime(0, now + 0.6); osc.start(now); osc.stop(now + 0.6); }
+        }
+
+        function fireConfetti() {
+            const colors = ['#ff00ff', '#00ffff', '#ffff00', '#00ff00', '#ff0000', '#a87ffb'];
+            for (let i = 0; i < 80; i++) {
+                const conf = document.createElement('div'); conf.className = 'confetti'; conf.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+                conf.style.left = '50vw'; conf.style.top = '40vh'; 
+                const angle = Math.random() * Math.PI * 2; const velocity = 100 + Math.random() * 300; 
+                conf.style.setProperty('--tx', Math.cos(angle) * velocity + 'px'); conf.style.setProperty('--ty', Math.sin(angle) * velocity + 150 + 'px'); conf.style.setProperty('--rot', Math.random() * 720 + 'deg');
+                document.body.appendChild(conf); setTimeout(() => conf.remove(), 1500);
+            }
+        }
+
+        function formatWord(text, mode, isEndless) {
+            if (!text) return ""; let result = '';
+            for (let i = 0; i < text.length; i++) {
+                let char = text[i]; let displayChar = char === ' ' ? '␣' : char;
+                if (char.toLowerCase() !== char && char !== ' ') {
+                    let suffix = isEndless ? '-endless' : '';
+                    result += `<span class="upper-${mode}${suffix}">${displayChar}</span>`;
+                } else { result += displayChar; }
+            }
+            return result;
+        }
+
+        function activateEndlessMode() {
+            endlessStartTime = performance.now(); endlessKeystrokes = 0;
+            document.getElementById('progress-container').style.display = 'none'; document.getElementById('skip-btn').style.display = 'none'; document.getElementById('apm-container').style.display = 'block'; 
+            
+            if (activeMode === 'neon') {
+                document.getElementById('stats-box').classList.add('endless-neon-text'); document.getElementById('level-title-display').classList.add('endless-neon-text');
+            } else if (activeMode === 'wizard') {
+                document.getElementById('stats-box').classList.add('endless-wizard-text'); document.getElementById('level-title-display').classList.add('endless-wizard-text'); document.getElementById('target-display-wizard').classList.add('endless-wizard-text', 'endless-wizard-box');
+            } else {
+                document.getElementById('stats-box').classList.add('endless-flow-text'); document.getElementById('level-title-display').classList.add('endless-flow-text');
+            }
+
+            if (apmInterval) clearInterval(apmInterval);
+            apmInterval = setInterval(() => {
+                if (!isPlaying) return;
+                let minutes = (performance.now() - endlessStartTime) / 60000;
+                if (minutes > 0) document.getElementById('apm-value').innerText = Math.round(endlessKeystrokes / minutes);
+            }, 1000);
+        }
+
+        function updateScore(points) { score = Math.max(0, score + points); if (score > highScore) { highScore = score; localStorage.setItem('typingGame_highScore', highScore); } }
+
+        function updateUI() {
+            document.getElementById('score').innerText = score; document.getElementById('level-display').innerText = currentConfig.level; document.getElementById('level-name').innerText = currentConfig.title;
+            let acc = 100; if (totalKeypresses > 0) acc = Math.round((correctKeypresses / totalKeypresses) * 100); document.getElementById('accuracy').innerText = acc;
+            if (currentConfig.level !== "∞") {
+                let prevLevelPts = currentLevelIndex > 0 ? GAME_LEVELS[currentLevelIndex - 1].pointsToNext : 0;
+                let progressPercent = Math.min(100, Math.max(0, ((score - prevLevelPts) / (currentConfig.pointsToNext - prevLevelPts)) * 100));
+                document.getElementById('progress-bar').style.width = progressPercent + '%';
+            }
+        }
+
+        function skipLevel() { 
+            if (currentConfig.level !== "∞") { 
+                updateScore(currentConfig.pointsToNext - score); 
+                checkLevelUp(); 
+            } 
+        }
+
+        function checkLevelUp() {
+            if (score >= currentConfig.pointsToNext && currentLevelIndex < GAME_LEVELS.length - 1) {
+                playSound('levelup'); fireConfetti(); 
+                currentLevelIndex++; currentConfig = GAME_LEVELS[currentLevelIndex]; localStorage.setItem('typingGame_savedLevel', currentLevelIndex);
+                orderedSpawnIndex = 0;
+                
+                const lvlUp = document.createElement('div'); lvlUp.innerText = currentConfig.level === "∞" ? "🔥 ENDLOS FREIGESCHALTET 🔥" : "🌟 LEVEL UP! 🌟";
+                lvlUp.style = "position:absolute; top:40%; left:50%; transform:translate(-50%,-50%); font-size:4rem; color:#ff0; text-shadow:0 0 30px #ff0; z-index:100; white-space:nowrap;";
+                document.body.appendChild(lvlUp); setTimeout(() => lvlUp.remove(), 2500);
+
+                if (currentConfig.level === "∞") { activateEndlessMode(); }
+
+                if (activeMode === 'neon') { neonTargets.forEach(t => t.el.remove()); neonTargets = []; } 
+                else if (activeMode === 'wizard') { wizardText = ""; document.getElementById('target-display-wizard').innerHTML = "Bereit..."; setTimeout(spawnWizardTarget, 1500); }
+                else if (activeMode === 'flow') { document.getElementById('flow-text-wrapper').innerHTML = ""; setTimeout(initFlowLevel, 1500); }
+            } else if (activeMode === 'wizard' && wizardText === "") { spawnWizardTarget(); }
+            else if (activeMode === 'flow' && flowIndex >= flowText.length) { initFlowLevel(); }
+            updateUI();
+        }
+
+        function startGame(mode, resume) {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            speedMultiplier = parseFloat(document.getElementById('speed-select').value);
+            let hideAccuracy = document.getElementById('hide-acc-cb').checked;
+            
+            localStorage.setItem('typingGame_speed', speedMultiplier);
+            localStorage.setItem('typingGame_hideAcc', hideAccuracy);
+            
+            document.getElementById('accuracy-box').style.display = hideAccuracy ? 'none' : 'block';
+
+            activeMode = mode; isPlaying = true; orderedSpawnIndex = 0;
+            document.getElementById('start-screen').style.display = 'none'; document.getElementById('ui').style.display = 'flex';
+            
+            document.getElementById('progress-container').style.display = 'block'; document.getElementById('skip-btn').style.display = 'inline-block'; document.getElementById('apm-container').style.display = 'none';
+            document.getElementById('stats-box').className = 'stats-box'; document.getElementById('level-title-display').className = 'level-title'; document.getElementById('target-display-wizard').className = '';
+            if (apmInterval) clearInterval(apmInterval);
+            
+            document.getElementById('game-container-neon').style.display = 'none';
+            document.getElementById('game-container-wizard').style.display = 'none';
+            document.getElementById('game-container-flow').style.display = 'none';
+
+            if (resume) { currentLevelIndex = savedLevel; score = currentLevelIndex > 0 ? GAME_LEVELS[currentLevelIndex - 1].pointsToNext : 0; } 
+            else { currentLevelIndex = 0; score = 0; totalKeypresses = 0; correctKeypresses = 0; }
+            currentConfig = GAME_LEVELS[currentLevelIndex];
+
+            if (mode === 'neon') {
+                document.getElementById('game-container-neon').style.display = 'block'; document.getElementById('stats-box').style.color = '#0ff';
+                document.getElementById('level-title-display').style.color = '#f0f'; document.getElementById('progress-bar').style.backgroundColor = '#f0f'; document.getElementById('progress-bar').style.boxShadow = '0 0 15px #f0f';
+                lastNeonSpawnTime = document.timeline.currentTime || performance.now(); requestAnimationFrame(neonGameLoop);
+            } else if (mode === 'wizard') {
+                document.getElementById('game-container-wizard').style.display = 'flex'; document.getElementById('stats-box').style.color = '#a87ffb';
+                document.getElementById('level-title-display').style.color = '#ffeb3b'; document.getElementById('progress-bar').style.backgroundColor = '#ffeb3b'; document.getElementById('progress-bar').style.boxShadow = '0 0 15px #ffeb3b';
+                spawnWizardTarget();
+            } else if (mode === 'flow') {
+                document.getElementById('game-container-flow').style.display = 'flex'; document.getElementById('stats-box').style.color = '#00ffcc';
+                document.getElementById('level-title-display').style.color = '#00ffcc'; document.getElementById('progress-bar').style.backgroundColor = '#00ffcc'; document.getElementById('progress-bar').style.boxShadow = '0 0 15px #00ffcc';
+                initFlowLevel();
+            }
+            if (currentConfig.level === "∞") activateEndlessMode();
+            updateUI();
+        }
+
+        let neonTargets = []; let lastNeonSpawnTime = 0;
+        function spawnNeonTarget() {
+            let text = "";
+            if (currentConfig.ordered) {
+                text = currentConfig.items[orderedSpawnIndex % currentConfig.items.length];
+                orderedSpawnIndex++;
+            } else { text = currentConfig.items[Math.floor(Math.random() * currentConfig.items.length)]; }
+            const el = document.createElement('div'); el.className = 'target-neon'; 
+            if (currentConfig.level === "∞") el.classList.add('endless-neon-text');
+            el.innerHTML = formatWord(text, 'neon', currentConfig.level === "∞"); 
+            el.style.left = Math.random() * (window.innerWidth - 200) + 'px'; el.style.top = '-80px';
+            document.getElementById('game-container-neon').appendChild(el);
+            
+            let calcSpeed = (currentConfig.speed * speedMultiplier) + (Math.random() * (0.5 * speedMultiplier));
+            neonTargets.push({ text: text, el: el, y: -80, speed: calcSpeed });
+        }
+        function neonGameLoop(timestamp) {
+            if (!isPlaying || activeMode !== 'neon') return;
+            let calcSpawnRate = currentConfig.spawnRate / speedMultiplier;
+            if (timestamp - lastNeonSpawnTime > calcSpawnRate) { spawnNeonTarget(); lastNeonSpawnTime = timestamp; }
+            for (let i = neonTargets.length - 1; i >= 0; i--) {
+                let t = neonTargets[i]; t.y += t.speed; t.el.style.top = t.y + 'px';
+                if (t.y > window.innerHeight) { t.el.remove(); neonTargets.splice(i, 1); updateScore(-5); updateUI(); }
+            }
+            requestAnimationFrame(neonGameLoop);
+        }
+
+        let wizardText = ""; const wizardDisplay = document.getElementById('target-display-wizard'); const wizardAvatar = document.getElementById('wizard');
+        function spawnWizardTarget() {
+            if (!isPlaying || activeMode !== 'wizard') return;
+            if (currentConfig.ordered) {
+                wizardText = currentConfig.items[orderedSpawnIndex % currentConfig.items.length];
+                orderedSpawnIndex++;
+            } else { wizardText = currentConfig.items[Math.floor(Math.random() * currentConfig.items.length)]; }
+            wizardDisplay.innerHTML = formatWord(wizardText, 'wizard', currentConfig.level === "∞");
+            wizardDisplay.classList.remove('shake');
+        }
+
+        function initFlowLevel() {
+            flowIndex = 0;
+            if (currentConfig.ordered && currentConfig.level !== "∞") {
+                flowText = currentConfig.items.join(' ');
+            } else {
+                let itemsCount = currentConfig.level === "∞" ? 30 : Math.max(20, Math.ceil((currentConfig.pointsToNext - score) / 10) + 5);
+                let arr = [];
+                for(let i=0; i<itemsCount; i++) arr.push(currentConfig.items[Math.floor(Math.random() * currentConfig.items.length)]);
+                flowText = arr.join(' ');
+            }
+
+            let html = ""; let isEndless = (currentConfig.level === "∞");
+            for(let i = 0; i < flowText.length; i++) {
+                let char = flowText[i]; let displayChar = char === ' ' ? '␣' : char;
+                
+                // NEU: Saubere Logik für Grossbuchstaben
+                let isUpper = (char.toLowerCase() !== char && char !== ' ');
+                let upperClass = "";
+                if (isUpper) { upperClass = isEndless ? " endless-flow-upper" : " upper-flow"; }
+                
+                let stateClass = i === 0 ? 'current' : 'upcoming';
+                if (isEndless && i === 0) stateClass += ' endless-flow-current';
+                
+                html += `<span class="flow-char ${stateClass}${upperClass}" id="fc-${i}">${displayChar}</span>`;
+            }
+            document.getElementById('flow-text-wrapper').innerHTML = html;
+            updateFlowTransform();
+        }
+
+        function updateFlowTransform() {
+            let wrapper = document.getElementById('flow-text-wrapper');
+            wrapper.style.transform = `translateX(calc(-0.5ch - ${flowIndex}ch))`;
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if (!isPlaying) return;
+            if (['Shift', 'Control', 'Alt', 'Meta', 'AltGraph', 'CapsLock'].includes(e.key)) return;
+            if (e.key === ' ') e.preventDefault(); 
+
+            totalKeypresses++;
+
+            if (activeMode === 'neon') {
+                let targetIdx = -1; let maxY = -100;
+                for (let i = 0; i < neonTargets.length; i++) {
+                    if (neonTargets[i].text[0] === e.key && neonTargets[i].y > maxY) { maxY = neonTargets[i].y; targetIdx = i; }
+                }
+                if (targetIdx !== -1) {
+                    correctKeypresses++; if (currentConfig.level === "∞") endlessKeystrokes++; 
+                    let t = neonTargets[targetIdx]; t.text = t.text.substring(1); 
+                    t.el.innerHTML = formatWord(t.text, 'neon', currentConfig.level === "∞"); 
+                    
+                    if (t.text === "") {
+                        playSound('hit-neon');
+                        const explosion = document.createElement('div'); explosion.className = 'explosion'; explosion.innerText = '💥';
+                        explosion.style.left = t.el.style.left; explosion.style.top = t.el.style.top;
+                        document.getElementById('game-container-neon').appendChild(explosion); setTimeout(() => explosion.remove(), 400);
+                        t.el.remove(); neonTargets.splice(targetIdx, 1); updateScore(10); 
+                        if (currentConfig.ordered && orderedSpawnIndex >= currentConfig.items.length && neonTargets.length === 0) { score = Math.max(score, currentConfig.pointsToNext); }
+                        checkLevelUp();
+                    } else { playSound('hit-neon'); }
+                } else { playSound('error'); updateScore(-1); }
+
+            } else if (activeMode === 'wizard') {
+                if (wizardText === "") return; 
+                if (wizardText[0] === e.key) {
+                    correctKeypresses++; if (currentConfig.level === "∞") endlessKeystrokes++; 
+                    playSound('hit-wizard');
+                    wizardAvatar.style.transform = 'translateY(-20px) scale(1.1)'; setTimeout(() => wizardAvatar.style.transform = 'translateY(0) scale(1)', 150);
+
+                    const ghost = document.createElement('div'); ghost.className = 'ghost-letter'; 
+                    if (currentConfig.level === "∞") ghost.classList.add('endless-wizard-text'); 
+                    ghost.innerHTML = formatWord(wizardText[0], 'wizard', currentConfig.level === "∞"); 
+                    ghost.style.left = (window.innerWidth / 2 - 20) + 'px'; ghost.style.top = (window.innerHeight / 2 + 50) + 'px';
+                    document.body.appendChild(ghost); setTimeout(() => ghost.remove(), 500);
+
+                    wizardText = wizardText.substring(1);
+                    wizardDisplay.innerHTML = formatWord(wizardText, 'wizard', currentConfig.level === "∞") || "...";
+
+                    if (wizardText === "") { 
+                        updateScore(10); 
+                        if (currentConfig.ordered && orderedSpawnIndex >= currentConfig.items.length) { score = Math.max(score, currentConfig.pointsToNext); }
+                        checkLevelUp(); 
+                    }
+                } else { playSound('error'); wizardDisplay.classList.remove('shake'); void wizardDisplay.offsetWidth; wizardDisplay.classList.add('shake'); }
+            
+            } else if (activeMode === 'flow') {
+                if (flowIndex >= flowText.length) return;
+                let expected = flowText[flowIndex];
+                
+                if (e.key === expected) {
+                    correctKeypresses++; if (currentConfig.level === "∞") endlessKeystrokes++; 
+                    playSound('hit-flow');
+                    
+                    let prevEl = document.getElementById('fc-' + flowIndex);
+                    if (prevEl) { prevEl.classList.remove('current', 'endless-flow-current'); prevEl.classList.add('typed'); }
+                    
+                    flowIndex++;
+                    if (expected === ' ' || flowIndex === flowText.length) updateScore(10);
+                    
+                    let nextEl = document.getElementById('fc-' + flowIndex);
+                    if (nextEl) { 
+                        nextEl.classList.remove('upcoming'); nextEl.classList.add('current'); 
+                        if (currentConfig.level === "∞") nextEl.classList.add('endless-flow-current');
+                    }
+                    
+                    updateFlowTransform();
+                    
+                    if (flowIndex === flowText.length) {
+                        if (currentConfig.level === "∞") {
+                            initFlowLevel();
+                        } else if (currentConfig.ordered) {
+                            score = Math.max(score, currentConfig.pointsToNext);
+                            checkLevelUp();
+                        } else if (score >= currentConfig.pointsToNext) {
+                            checkLevelUp();
+                        } else {
+                            initFlowLevel();
+                        }
+                    }
+                } else {
+                    playSound('error'); updateScore(-1);
+                    let wrapper = document.getElementById('flow-text-wrapper');
+                    wrapper.classList.remove('shake'); void wrapper.offsetWidth; wrapper.classList.add('shake');
+                }
+            }
+            updateUI();
+        });
+    </script>
+</body>
+</html>
