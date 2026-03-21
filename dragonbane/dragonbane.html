@@ -12,17 +12,17 @@
 
     <style>
         :root {
-            --primary: #8a1c1c; /* Deep Crimson */
+            --primary: #8a1c1c; 
             --primary-hover: #5e1111;
-            --bg: #370404; /* Dark red background */
-            --container-bg: #101010; /* Dark grey sheet */
-            --box-bg: #2a2a2a; /* Slightly lighter inset boxes */
-            --border: #4a3c22; /* Dark bronze/brown */
-            --highlight: #b8974a; /* Antique gold */
-            --text-main: #d4c8b8; /* Parchment white */
+            --bg: #370404; 
+            --container-bg: #101010; 
+            --box-bg: #2a2a2a; 
+            --border: #4a3c22; 
+            --highlight: #b8974a; 
+            --text-main: #d4c8b8; 
             --text-muted: #8b8378;
-            --input-bg: #3a3a3a; /* Lighter than box background */
-            --input-border: #5a5a5a; /* Slightly lighter border for inputs */
+            --input-bg: #3a3a3a; 
+            --input-border: #5a5a5a; 
         }
 
         body {
@@ -182,7 +182,7 @@
                 background: white; border: none; box-shadow: none; 
                 padding: 0; margin: 0; max-width: 100%; 
             }
-            h1 { display: none; } /* Hide the main title in print to save space */
+            h1 { display: none; }
             h2, h3, h4 { color: black; margin: 2px 0; border-color: black; font-size: 11pt; }
             .box { 
                 background: white; border: 1px solid #999; box-shadow: none; 
@@ -365,15 +365,18 @@
         
         <button class="btn btn-secondary" style="margin-bottom: 15px;" onclick="randomizeStep4()">🎲 Randomize Skills & Spells</button>
 
+        <div class="box info-box" style="margin-top: 0; margin-bottom: 15px;">
+            Based on your age (<strong id="display-age" style="color:var(--text-main);"></strong>), you have a total of <strong id="total-skills-allowed" style="color:var(--highlight); font-size: 1.2em;"></strong> Trained Skills (6 base + <span id="additional-skills-allowed"></span> age bonus).<br>
+            You must select <strong>at least 6</strong> from your Profession Skills. The rest can be selected from anywhere.
+        </div>
+
         <div class="box">
             <h3 style="color: var(--text-main);">Profession Skills</h3>
-            <p style="margin-top: 0;">Choose exactly <strong style="color:var(--highlight); font-size: 1.2em;">6</strong> from your Profession's allowed skills.</p>
             <div id="prof-skills-container" class="skill-list"></div>
         </div>
 
         <div class="box">
             <h3 style="color: var(--text-main);">Additional Skills</h3>
-            <p style="margin-top: 0;">Based on your age (<strong id="display-age" style="color:var(--text-main);"></strong>), you may select <strong id="skills-allowed" style="color:var(--highlight); font-size: 1.2em;"></strong> additional Trained Skills from the remaining list.</p>
             <div id="general-skills-container" class="skill-list"></div>
         </div>
 
@@ -393,7 +396,7 @@
         </div>
 
         <button class="btn btn-secondary" onclick="nextStep(3)">Back</button>
-        <button class="btn" onclick="buildSheet(); nextStep(5)">Finish & View Sheet</button>
+        <button class="btn" onclick="finishStep4()">Finish & View Sheet</button>
     </div>
 
     <div id="step5" class="step">
@@ -748,7 +751,9 @@
         document.getElementById('display-age').innerText = age;
         
         maxAdditionalSkills = (age === "Young") ? 2 : (age === "Adult") ? 4 : 6;
-        document.getElementById('skills-allowed').innerText = maxAdditionalSkills;
+        
+        document.getElementById('total-skills-allowed').innerText = 6 + maxAdditionalSkills;
+        document.getElementById('additional-skills-allowed').innerText = maxAdditionalSkills;
 
         const prof = document.getElementById('profession').value;
         let profSkillsStr = profData[prof].skills;
@@ -817,9 +822,30 @@
     }
 
     function randomizeStep4() {
-        checkRandomCheckboxes('.prof-skill-check', 6);
-        checkRandomCheckboxes('.gen-skill-check', maxAdditionalSkills);
+        let profCbs = Array.from(document.querySelectorAll('.prof-skill-check'));
+        let genCbs = Array.from(document.querySelectorAll('.gen-skill-check'));
         
+        // Clear all
+        profCbs.forEach(cb => cb.checked = false);
+        genCbs.forEach(cb => cb.checked = false);
+
+        // 1. Pick exactly 6 from profession pool
+        profCbs.sort(() => 0.5 - Math.random());
+        for(let i=0; i<6; i++) {
+            profCbs[i].checked = true;
+        }
+
+        // 2. Mix the leftover 2 profession skills with ALL the general skills, and pick X amount
+        let remainingCbs = [
+            ...profCbs.filter(cb => !cb.checked), 
+            ...genCbs
+        ];
+        remainingCbs.sort(() => 0.5 - Math.random());
+        
+        for(let i=0; i<maxAdditionalSkills; i++) {
+            remainingCbs[i].checked = true;
+        }
+
         if (document.getElementById('profession').value === "Mage") {
             checkRandomCheckboxes('.magic-trick-check', 3);
             checkRandomCheckboxes('.magic-spell-check', 3);
@@ -829,7 +855,6 @@
     }
 
     function randomizeEverything() {
-        // Step 1
         rollKin();
         randomizeSelectAndApply('kin-name-select', 'charName');
         randomizeSelect('profession');
@@ -842,35 +867,32 @@
         }
         randomizeSelect('age');
 
-        // Step 2
         rollAllAttributes();
 
-        // Step 3
         randomizeSelectAndApply('appearance-select', 'appearance');
         randomizeSelectAndApply('weakness-select', 'weakness');
         randomizeSelectAndApply('memento-select', 'memento');
         randomizeSelect('equipment-select');
 
-        // Step 4
-        prepareSkillSelection(); // Ensure DOM elements for step 4 are generated based on Step 1 choices
+        prepareSkillSelection(); 
         randomizeStep4();
 
-        // Render Sheet & Move to Step 5
         buildSheet();
         nextStep(5);
     }
 
     function enforceSkillLimits() {
-        const profCheckboxes = document.querySelectorAll('.prof-skill-check');
-        const profCheckedCount = document.querySelectorAll('.prof-skill-check:checked').length;
-        profCheckboxes.forEach(cb => {
-            if (!cb.checked) cb.disabled = (profCheckedCount >= 6);
-        });
+        const allCheckboxes = document.querySelectorAll('.prof-skill-check, .gen-skill-check');
+        const totalCheckedCount = document.querySelectorAll('.prof-skill-check:checked, .gen-skill-check:checked').length;
+        const totalAllowed = 6 + maxAdditionalSkills;
 
-        const genCheckboxes = document.querySelectorAll('.gen-skill-check');
-        const genCheckedCount = document.querySelectorAll('.gen-skill-check:checked').length;
-        genCheckboxes.forEach(cb => {
-            if (!cb.checked) cb.disabled = (genCheckedCount >= maxAdditionalSkills);
+        // Disables unchecked boxes only when the absolute combined total is reached
+        allCheckboxes.forEach(cb => {
+            if (!cb.checked) {
+                cb.disabled = (totalCheckedCount >= totalAllowed);
+            } else {
+                cb.disabled = false;
+            }
         });
     }
 
@@ -882,6 +904,37 @@
         const spellCbs = document.querySelectorAll('.magic-spell-check');
         const spellCount = document.querySelectorAll('.magic-spell-check:checked').length;
         spellCbs.forEach(cb => { if (!cb.checked) cb.disabled = (spellCount >= 3); });
+    }
+
+    function finishStep4() {
+        const profCheckedCount = document.querySelectorAll('.prof-skill-check:checked').length;
+        const totalCheckedCount = document.querySelectorAll('.prof-skill-check:checked, .gen-skill-check:checked').length;
+        const totalAllowed = 6 + maxAdditionalSkills;
+
+        // Validation: Must select at least 6 from the profession pool
+        if (profCheckedCount < 6) {
+            alert(`You must select at least 6 Profession Skills. (Currently selected: ${profCheckedCount})`);
+            return;
+        }
+
+        // Validation: Must use all skill points
+        if (totalCheckedCount !== totalAllowed) {
+            alert(`You must select exactly ${totalAllowed} Trained Skills total. (Currently selected: ${totalCheckedCount})`);
+            return;
+        }
+
+        // Validation: Mages must select their magic
+        if (document.getElementById('profession').value === "Mage") {
+            const trickCount = document.querySelectorAll('.magic-trick-check:checked').length;
+            const spellCount = document.querySelectorAll('.magic-spell-check:checked').length;
+            if (trickCount !== 3 || spellCount !== 3) {
+                alert("As a Mage, you must select exactly 3 Magic Tricks and 3 Rank 1 Spells.");
+                return;
+            }
+        }
+
+        buildSheet();
+        nextStep(5);
     }
 
     function buildSheet() {
