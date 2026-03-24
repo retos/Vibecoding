@@ -42,18 +42,25 @@
             border: 2px solid var(--border);
             border-radius: 4px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.8), inset 0 0 20px rgba(0,0,0,0.5);
+            position: relative;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 10px;
+            margin-bottom: 20px;
         }
 
         h1 {
             color: var(--highlight);
             text-transform: uppercase;
-            margin-bottom: 20px;
-            text-align: center;
+            margin: 0;
             font-size: 2.2em;
             letter-spacing: 2px;
             text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-            border-bottom: 2px solid var(--primary);
-            padding-bottom: 10px;
         }
 
         h2, h3, h4 { 
@@ -171,6 +178,26 @@
 
         #sheet-magic-section { background-color: #1f1a1a; border-color: var(--highlight); }
 
+        /* Modal Styles */
+        .modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.8); z-index: 1000; justify-content: center; align-items: center;
+            backdrop-filter: blur(5px);
+        }
+        .modal-content {
+            background: var(--container-bg); border: 2px solid var(--highlight);
+            border-radius: 4px; padding: 30px; max-width: 600px; width: 90%;
+            max-height: 85vh; overflow-y: auto; box-shadow: 0 10px 40px rgba(0,0,0,0.9);
+            position: relative;
+        }
+        .modal-close {
+            position: absolute; top: 15px; right: 15px; background: none; border: none;
+            color: var(--highlight); font-size: 1.5em; cursor: pointer; font-weight: bold;
+        }
+        .modal-close:hover { color: #fff; }
+        .repo-link { color: var(--highlight); text-decoration: none; font-weight: bold; }
+        .repo-link:hover { text-decoration: underline; color: #fff; }
+
         /* Highly Compact Print CSS */
         @media print {
             @page { size: A4; margin: 8mm; }
@@ -182,41 +209,60 @@
                 background: white; border: none; box-shadow: none; 
                 padding: 0; margin: 0; max-width: 100%; 
             }
-            h1 { display: none; }
+            .header-top { display: none; }
             h2, h3, h4 { color: black; margin: 2px 0; border-color: black; font-size: 11pt; }
             .box { 
                 background: white; border: 1px solid #999; box-shadow: none; 
                 padding: 6px; margin-bottom: 6px; color: black; 
             }
-            .grid-2 { gap: 6px; }
-            .grid-3 { gap: 6px; }
-            
+            .grid-2, .grid-3 { gap: 6px; }
             textarea { 
                 background: transparent; color: black; border: none; box-shadow: none; 
                 resize: none; padding: 0; min-height: 40px; font-size: 9pt;
             }
-            
             .stat-box { padding: 4px; border-color: #999; }
             .stat-box span { color: black; text-shadow: none; font-size: 1.5em; margin: 0; }
-            
             .info-box { background: #f0f0f0; color: black; padding: 6px; border-color: #666; font-size: 8.5pt; margin-top: 4px; }
-            
             th { background: #ddd; color: black; font-size: 8pt; padding: 3px; }
             td { color: black; font-size: 8.5pt; padding: 3px; border-color: #aaa; }
             table { margin-top: 4px; }
-
             .condition-label { font-size: 7.5pt; color: black; }
-            
-            /* Hide UI elements */
             .btn, #print-header { display: none !important; }
             #sheet-magic-section { background-color: transparent; border-color: #999; }
+            .modal-overlay { display: none !important; }
         }
     </style>
 </head>
 <body>
 
+<div id="aboutModal" class="modal-overlay">
+    <div class="modal-content">
+        <button class="modal-close" onclick="document.getElementById('aboutModal').style.display='none'">×</button>
+        <h2 style="border-bottom: 2px solid var(--primary); padding-bottom: 10px;">About this Creator</h2>
+        <p>Welcome to the offline Dragonbane Character Creator. This tool guides you step-by-step through generating a character strictly adhering to the core rules.</p>
+        
+        <h3 style="margin-top: 20px; font-size: 1.1em;">How to Use</h3>
+        <ul style="color: var(--text-muted); line-height: 1.5; padding-left: 20px;">
+            <li><strong>Step 1: Basics.</strong> Choose your Kin, Profession, and Age. Mages must select a magic school. You can manually select options or use the dice roll buttons.</li>
+            <li><strong>Step 2: Attributes.</strong> Roll 4D6 (dropping the lowest) for your base attributes. The app automatically calculates your final score based on your selected Age.</li>
+            <li><strong>Step 3: Background.</strong> Determine your Appearance, Weakness, Memento, and starting Gear.</li>
+            <li><strong>Step 4: Skills.</strong> You receive a pool of points based on your Age. You <em>must</em> pick at least 6 skills from your Profession's allowed list. Mages also select their starting Spells and Tricks here.</li>
+            <li><strong>Step 5: Final Sheet.</strong> Review your fully calculated digital character sheet. From here, you can print the page or save it as a highly-compact PDF.</li>
+        </ul>
+
+        <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid var(--border); font-size: 0.85em; color: var(--text-muted); text-align: center;">
+            <p>This tool was created with the assistance of AI.</p>
+            <p>Published under the <strong>GNU General Public License (GPL)</strong>.</p>
+            <p>Source Code: <a href="https://github.com/retos/Vibecoding" target="_blank" class="repo-link">github.com/retos/Vibecoding</a></p>
+        </div>
+    </div>
+</div>
+
 <div class="container">
-    <h1>Dragonbane Character Creator</h1>
+    <div class="header-top">
+        <h1>Dragonbane Creator</h1>
+        <button class="btn btn-secondary" style="margin: 0;" onclick="document.getElementById('aboutModal').style.display='flex'">Help & About</button>
+    </div>
     
     <div id="step1" class="step active">
         <button class="btn btn-highlight" onclick="randomizeEverything()">🎲 Quick Roll: Randomize Entire Character</button>
@@ -294,7 +340,7 @@
                 </select>
                 <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('age'); calcAttributes();">Roll</button>
             </div>
-            <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 0;"><em>Your age determines your trained skills and directly modifies your Base Attributes in Step 2.</em></p>
+            <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 0;"><em>Your age determines how many additional trained skills you get on top of the 6 core skills from your profession.</em></p>
         </div>
 
         <button class="btn" onclick="nextStep(2)">Next Step: Attributes</button>
@@ -690,11 +736,11 @@
         const memSelect = document.getElementById('memento-select');
         mementosList.forEach((item, index) => memSelect.add(new Option(`${index+1}. ${item}`, item)));
 
-        calcAttributes(); // Setup initial modifier displays
+        calcAttributes(); 
     });
 
     function nextStep(step) {
-        if (step === 2) calcAttributes(); // Make sure Age updates persist into Step 2
+        if (step === 2) calcAttributes(); 
         document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
         document.getElementById('step' + step).classList.add('active');
     }
@@ -901,17 +947,14 @@
         let profCbs = Array.from(document.querySelectorAll('.prof-skill-check'));
         let genCbs = Array.from(document.querySelectorAll('.gen-skill-check'));
         
-        // Clear all
         profCbs.forEach(cb => cb.checked = false);
         genCbs.forEach(cb => cb.checked = false);
 
-        // 1. Pick exactly 6 from profession pool
         profCbs.sort(() => 0.5 - Math.random());
         for(let i=0; i<6; i++) {
             profCbs[i].checked = true;
         }
 
-        // 2. Mix the leftover 2 profession skills with ALL the general skills
         let remainingCbs = [
             ...profCbs.filter(cb => !cb.checked), 
             ...genCbs
@@ -942,7 +985,7 @@
             updateProfessionDetails();
         }
         randomizeSelect('age');
-        calcAttributes(); // Updates mod UI for the new age immediately
+        calcAttributes(); 
 
         rollAllAttributes();
 
@@ -963,7 +1006,6 @@
         const totalCheckedCount = document.querySelectorAll('.prof-skill-check:checked, .gen-skill-check:checked').length;
         const totalAllowed = 6 + maxAdditionalSkills;
 
-        // Disables unchecked boxes only when the absolute combined total is reached
         allCheckboxes.forEach(cb => {
             if (!cb.checked) {
                 cb.disabled = (totalCheckedCount >= totalAllowed);
@@ -988,19 +1030,16 @@
         const totalCheckedCount = document.querySelectorAll('.prof-skill-check:checked, .gen-skill-check:checked').length;
         const totalAllowed = 6 + maxAdditionalSkills;
 
-        // Validation: Must select at least 6 from the profession pool
         if (profCheckedCount < 6) {
             alert(`You must select at least 6 Profession Skills. (Currently selected: ${profCheckedCount})`);
             return;
         }
 
-        // Validation: Must use all skill points
         if (totalCheckedCount !== totalAllowed) {
             alert(`You must select exactly ${totalAllowed} Trained Skills total. (Currently selected: ${totalCheckedCount})`);
             return;
         }
 
-        // Validation: Mages must select their magic
         if (document.getElementById('profession').value === "Mage") {
             const trickCount = document.querySelectorAll('.magic-trick-check:checked').length;
             const spellCount = document.querySelectorAll('.magic-spell-check:checked').length;
