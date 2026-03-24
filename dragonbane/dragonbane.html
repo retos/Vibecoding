@@ -287,14 +287,14 @@
         <div class="box">
             <label>Age <span class="dice-hint">(Roll 1D6: 1-2 Young, 3-4 Adult, 5-6 Old)</span></label>
             <div class="input-group">
-                <select id="age">
+                <select id="age" onchange="calcAttributes()">
                     <option value="Young">Young (6+2 Trained Skills)</option>
                     <option value="Adult" selected>Adult (6+4 Trained Skills)</option>
                     <option value="Old">Old (6+6 Trained Skills)</option>
                 </select>
-                <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('age')">Roll</button>
+                <button class="btn btn-secondary" style="margin-top:0;" onclick="randomizeSelect('age'); calcAttributes();">Roll</button>
             </div>
-            <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 0;"><em>Your age determines how many additional trained skills you get on top of the 6 core skills from your profession.</em></p>
+            <p style="font-size: 0.9em; color: var(--text-muted); margin-bottom: 0;"><em>Your age determines your trained skills and directly modifies your Base Attributes in Step 2.</em></p>
         </div>
 
         <button class="btn" onclick="nextStep(2)">Next Step: Attributes</button>
@@ -302,16 +302,68 @@
 
     <div id="step2" class="step">
         <h2>Step 2: Attributes</h2>
-        <p>Roll <strong>4D6</strong> and drop the lowest for each attribute. Age modifiers will be applied automatically.</p>
-        <button class="btn btn-secondary" style="margin-bottom: 15px;" onclick="rollAllAttributes()">Roll All Attributes Automatically</button>
+        <p>Roll <strong>4D6</strong> and drop the lowest for each attribute. Enter your base rolls in the boxes. The page will automatically apply your Age modifiers to calculate your Final Score.</p>
+        
+        <div id="age-modifier-info" class="info-box" style="margin-bottom: 15px;">
+            </div>
+
+        <button class="btn btn-secondary" style="margin-bottom: 15px;" onclick="rollAllAttributes()">Roll All Base Attributes Automatically</button>
         
         <div class="grid-3">
-            <div class="box"><label>Strength (STR)</label><input type="number" id="attr-str" min="3" max="18" value="10"></div>
-            <div class="box"><label>Constitution (CON)</label><input type="number" id="attr-con" min="3" max="18" value="10"></div>
-            <div class="box"><label>Agility (AGL)</label><input type="number" id="attr-agl" min="3" max="18" value="10"></div>
-            <div class="box"><label>Intelligence (INT)</label><input type="number" id="attr-int" min="3" max="18" value="10"></div>
-            <div class="box"><label>Willpower (WIL)</label><input type="number" id="attr-wil" min="3" max="18" value="10"></div>
-            <div class="box"><label>Charisma (CHA)</label><input type="number" id="attr-cha" min="3" max="18" value="10"></div>
+            <div class="box">
+                <label>Strength (STR)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <input type="number" id="base-str" min="3" max="18" value="10" oninput="calcAttributes()" style="width: 70px; margin: 0;">
+                    <span id="mod-str-display" style="color:var(--text-muted); width: 30px; text-align: center;">+0</span>
+                    <span style="color:var(--text-muted); font-weight: bold;">=</span>
+                    <strong id="final-str-display" style="color:var(--highlight); font-size: 1.3em; margin-left: auto;">10</strong>
+                </div>
+            </div>
+            <div class="box">
+                <label>Constitution (CON)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <input type="number" id="base-con" min="3" max="18" value="10" oninput="calcAttributes()" style="width: 70px; margin: 0;">
+                    <span id="mod-con-display" style="color:var(--text-muted); width: 30px; text-align: center;">+0</span>
+                    <span style="color:var(--text-muted); font-weight: bold;">=</span>
+                    <strong id="final-con-display" style="color:var(--highlight); font-size: 1.3em; margin-left: auto;">10</strong>
+                </div>
+            </div>
+            <div class="box">
+                <label>Agility (AGL)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <input type="number" id="base-agl" min="3" max="18" value="10" oninput="calcAttributes()" style="width: 70px; margin: 0;">
+                    <span id="mod-agl-display" style="color:var(--text-muted); width: 30px; text-align: center;">+0</span>
+                    <span style="color:var(--text-muted); font-weight: bold;">=</span>
+                    <strong id="final-agl-display" style="color:var(--highlight); font-size: 1.3em; margin-left: auto;">10</strong>
+                </div>
+            </div>
+            <div class="box">
+                <label>Intelligence (INT)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <input type="number" id="base-int" min="3" max="18" value="10" oninput="calcAttributes()" style="width: 70px; margin: 0;">
+                    <span id="mod-int-display" style="color:var(--text-muted); width: 30px; text-align: center;">+0</span>
+                    <span style="color:var(--text-muted); font-weight: bold;">=</span>
+                    <strong id="final-int-display" style="color:var(--highlight); font-size: 1.3em; margin-left: auto;">10</strong>
+                </div>
+            </div>
+            <div class="box">
+                <label>Willpower (WIL)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <input type="number" id="base-wil" min="3" max="18" value="10" oninput="calcAttributes()" style="width: 70px; margin: 0;">
+                    <span id="mod-wil-display" style="color:var(--text-muted); width: 30px; text-align: center;">+0</span>
+                    <span style="color:var(--text-muted); font-weight: bold;">=</span>
+                    <strong id="final-wil-display" style="color:var(--highlight); font-size: 1.3em; margin-left: auto;">10</strong>
+                </div>
+            </div>
+            <div class="box">
+                <label>Charisma (CHA)</label>
+                <div style="display: flex; align-items: center; gap: 10px; margin-top: 5px;">
+                    <input type="number" id="base-cha" min="3" max="18" value="10" oninput="calcAttributes()" style="width: 70px; margin: 0;">
+                    <span id="mod-cha-display" style="color:var(--text-muted); width: 30px; text-align: center;">+0</span>
+                    <span style="color:var(--text-muted); font-weight: bold;">=</span>
+                    <strong id="final-cha-display" style="color:var(--highlight); font-size: 1.3em; margin-left: auto;">10</strong>
+                </div>
+            </div>
         </div>
         
         <button class="btn btn-secondary" onclick="nextStep(1)">Back</button>
@@ -617,6 +669,12 @@
 
     let maxAdditionalSkills = 0;
 
+    const ageModifiers = {
+        "Young": { str: 0, con: 1, agl: 1, int: 0, wil: 0, cha: 0 },
+        "Adult": { str: 0, con: 0, agl: 0, int: 0, wil: 0, cha: 0 },
+        "Old":   { str: -2, con: -2, agl: -2, int: 1, wil: 1, cha: 0 }
+    };
+
     // --- Core Logic ---
 
     window.addEventListener('DOMContentLoaded', () => {
@@ -631,9 +689,12 @@
         
         const memSelect = document.getElementById('memento-select');
         mementosList.forEach((item, index) => memSelect.add(new Option(`${index+1}. ${item}`, item)));
+
+        calcAttributes(); // Setup initial modifier displays
     });
 
     function nextStep(step) {
+        if (step === 2) calcAttributes(); // Make sure Age updates persist into Step 2
         document.querySelectorAll('.step').forEach(el => el.classList.remove('active'));
         document.getElementById('step' + step).classList.add('active');
     }
@@ -711,18 +772,33 @@
 
     function rollAllAttributes() {
         const attrs = ['str', 'con', 'agl', 'int', 'wil', 'cha'];
-        const age = document.getElementById('age').value;
-        
         attrs.forEach(attr => {
-            let score = roll4d6DropLowest();
-            if (age === "Young" && (attr === 'agl' || attr === 'con')) score += 1;
-            if (age === "Old") {
-                if (attr === 'str' || attr === 'agl' || attr === 'con') score -= 2;
-                if (attr === 'int' || attr === 'wil') score += 1;
-            }
-            if (score > 18) score = 18;
-            if (score < 3) score = 3;
-            document.getElementById('attr-' + attr).value = score;
+            document.getElementById('base-' + attr).value = roll4d6DropLowest();
+        });
+        calcAttributes();
+    }
+
+    function calcAttributes() {
+        const age = document.getElementById('age').value;
+        const mods = ageModifiers[age];
+
+        let infoText = `<strong>Current Age Modifiers (${age}):</strong> `;
+        if (age === "Young") infoText += "CON +1, AGL +1";
+        else if (age === "Old") infoText += "STR -2, CON -2, AGL -2, INT +1, WIL +1";
+        else infoText += "None";
+        document.getElementById('age-modifier-info').innerHTML = infoText;
+
+        const attrs = ['str', 'con', 'agl', 'int', 'wil', 'cha'];
+        attrs.forEach(attr => {
+            let base = parseInt(document.getElementById('base-' + attr).value) || 0;
+            let mod = mods[attr];
+            let final = base + mod;
+            if (final > 18) final = 18;
+            if (final < 3) final = 3;
+
+            let modStr = mod > 0 ? "+" + mod : (mod === 0 ? "+0" : mod.toString());
+            document.getElementById('mod-' + attr + '-display').innerText = modStr;
+            document.getElementById('final-' + attr + '-display').innerText = final;
         });
     }
 
@@ -835,7 +911,7 @@
             profCbs[i].checked = true;
         }
 
-        // 2. Mix the leftover 2 profession skills with ALL the general skills, and pick X amount
+        // 2. Mix the leftover 2 profession skills with ALL the general skills
         let remainingCbs = [
             ...profCbs.filter(cb => !cb.checked), 
             ...genCbs
@@ -866,6 +942,7 @@
             updateProfessionDetails();
         }
         randomizeSelect('age');
+        calcAttributes(); // Updates mod UI for the new age immediately
 
         rollAllAttributes();
 
@@ -971,12 +1048,12 @@
             document.getElementById('sheet-magic-section').style.display = 'none';
         }
 
-        const str = parseInt(document.getElementById('attr-str').value);
-        const con = parseInt(document.getElementById('attr-con').value);
-        const agl = parseInt(document.getElementById('attr-agl').value);
-        const int = parseInt(document.getElementById('attr-int').value);
-        const wil = parseInt(document.getElementById('attr-wil').value);
-        const cha = parseInt(document.getElementById('attr-cha').value);
+        const str = parseInt(document.getElementById('final-str-display').innerText);
+        const con = parseInt(document.getElementById('final-con-display').innerText);
+        const agl = parseInt(document.getElementById('final-agl-display').innerText);
+        const int = parseInt(document.getElementById('final-int-display').innerText);
+        const wil = parseInt(document.getElementById('final-wil-display').innerText);
+        const cha = parseInt(document.getElementById('final-cha-display').innerText);
 
         document.getElementById('sheet-str').innerText = str;
         document.getElementById('sheet-con').innerText = con;
